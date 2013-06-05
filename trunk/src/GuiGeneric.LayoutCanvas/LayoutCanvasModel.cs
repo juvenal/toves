@@ -12,25 +12,12 @@ using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class LayoutCanvasModel : AbstractCanvasModel
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class LayoutCanvasModel : AbstractCanvasModel {
         private ICollection<Component> hidden = new HashSet<Component>();
-        private SimulationThread simThread;
 
         public LayoutCanvasModel() {
-            Layout = new LayoutModel();
-            LayoutSim = new LayoutSimulation(Layout);
-            WiringPoints = new LayoutWiringPoints(Layout);
             this.NullGesture = new GestureNull(this);
-            Layout.LayoutModifiedEvent += LayoutUpdated;
-            simThread = new SimulationThread(LayoutSim.SimulationModel);
-            simThread.Start();
-        }
-
-        public override void Disable() {
-            simThread.RequestStop();
         }
 
         public LayoutModel Layout { get; private set; }
@@ -51,8 +38,34 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        public override void Dispose()
-        {
+        public void SetView(LayoutModel value, LayoutSimulation layoutSim) {
+            LayoutModel oldLayout = this.Layout;
+            LayoutSimulation oldSim = this.LayoutSim;
+            bool updated = false;
+            if (value != oldLayout) {
+                this.Layout = value;
+                this.LayoutSim = layoutSim;
+                WiringPoints = new LayoutWiringPoints(value);
+                hidden = new HashSet<Component>();
+                this.NullGesture = new GestureNull(this);
+                if (oldLayout != null) {
+                    oldLayout.LayoutModifiedEvent -= LayoutUpdated;
+                }
+                if (value != null) {
+                    value.LayoutModifiedEvent += LayoutUpdated;
+                }
+                updated = true;
+            } else if (oldSim != layoutSim) {
+                updated = true;
+                this.LayoutSim = layoutSim;
+            }
+            if (updated) {
+                RepaintCanvas();
+            }
+        }
+
+        public override void Dispose() {
+            SetView(null, null);
         }
 
         public override void HandleKeyPressEvent(IKeyEvent evnt) {
@@ -63,8 +76,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
             // solders.Update();
         }
 
-        public void Execute(Action<ILayoutAccess> action)
-        {
+        public void Execute(Action<ILayoutAccess> action) {
             Transaction xn = new Transaction();
             ILayoutAccess lo = xn.RequestWriteAccess(Layout);
             using (xn.Start()) {
@@ -72,18 +84,26 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        protected override void PaintModel(IPaintbrush pb)
-        {
+        protected override void PaintModel(IPaintbrush pb) {
+            LayoutModel layoutModel = this.Layout;
+            LayoutSimulation layoutSim = this.LayoutSim;
+            if (layoutModel == null) {
+                return;
+            }
+            if (layoutSim.LayoutModel != layoutModel) {
+                Console.Error.WriteLine("layoutSim and layoutModel do not match");
+                return;
+            }
             ComponentPainter ip = new ComponentPainter(pb, null);
             bool noHidden = hidden.Count == 0;
             Transaction xn = new Transaction();
-            ISimulationAccess sim = xn.RequestReadAccess(LayoutSim.SimulationModel);
-            ILayoutAccess lo = xn.RequestReadAccess(Layout);
+            ISimulationAccess sim = xn.RequestReadAccess(layoutSim.SimulationModel);
+            ILayoutAccess layout = xn.RequestReadAccess(layoutModel);
             using (xn.Start()) {
                 using (IPaintbrush pbSub = pb.Create()) {
                     pbSub.StrokeWidth = Constants.WIRE_WIDTH;
-                    foreach (WireSegment wire in lo.Wires) {
-                        Value val0 = LayoutSim.GetValueAt(lo, sim, wire.End0);
+                    foreach (WireSegment wire in layout.Wires) {
+                        Value val0 = layoutSim.GetValueAt(layout, sim, wire.End0);
                         pbSub.Color = Constants.GetColorFor(val0);
                         pbSub.StrokeLine(wire.End0.X, wire.End0.Y, wire.End1.X, wire.End1.Y);
                     }
@@ -91,13 +111,13 @@ namespace Toves.GuiGeneric.LayoutCanvas
 
                 InstanceState state = new InstanceState(sim, null);
                 ip.InstanceState = state;
-                foreach (Component component in lo.Components) {
+                foreach (Component component in layout.Components) {
                     if (noHidden || !hidden.Contains(component)) {
                         Location loc = component.Location;
                         using (IPaintbrush pbSub = pb.Create()) {
                             pbSub.TranslateCoordinates(loc.X, loc.Y);
                             ip.Paintbrush = pbSub;
-                            state.Instance = LayoutSim.GetInstance(lo, component);
+                            state.Instance = layoutSim.GetInstance(layout, component);
                             component.Paint(ip);
                         }
                     }
@@ -105,7 +125,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
 
                 using (IPaintbrush pbSub = pb.Create()) {
                     foreach (Location loc in WiringPoints.SolderPoints) {
-                        Value val = LayoutSim.GetValueAt(lo, sim, loc);
+                        Value val = layoutSim.GetValueAt(layout, sim, loc);
                         pbSub.Color = Constants.GetColorFor(val);
                         if (noHidden || WiringPoints.IsSolderPoint(loc, hidden)) {
                             pbSub.FillCircle(loc.X, loc.Y, Constants.SOLDER_RADIUS);

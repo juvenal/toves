@@ -18,49 +18,58 @@
  * Hendrix College, 1600 Washington Ave, Conway AR 72032, USA.
  */
 using System;
+using System.Reflection;
 using Gtk;
 
 using Toves.GuiGeneric.LayoutCanvas;
-using Toves.GuiGeneric.Toolbox;
+using Toves.GuiGeneric.Window;
 using Toves.GuiImpl.GtkCanvas;
+using Toves.Proj;
 
 namespace Toves.GuiImpl.GtkMain {
     public class GtkMain : Gtk.Window {
         public static string Version = "0.0.1";
         public static string CopyrightYear = "2013";
 
-        public static void Main(string[] args)
-        {
+        public static void Main(string[] args) {
             Application.Init();
             GtkMain win = new GtkMain();
             win.Show();
             Application.Run();
         }
 
+        public static Image GetImage(string name) {
+            Assembly assem = Assembly.GetAssembly(typeof(WindowModel));
+            string rsrc = string.Format("{0}.images.{1}", assem.GetName().Name,
+                                        name);
+            return new Image(assem, rsrc);
+        }
+
+        private WindowModel windowModel = new WindowModel();
         private GtkCanvas.GtkCanvas canvas;
 
-        public GtkMain () : base("Toves")
-        {
-            LayoutCanvasModel canvasModel = new LayoutCanvasModel();
-            ToolboxModel toolboxModel = new ToolboxModel(canvasModel);
-
+        public GtkMain () : base("Toves") {
             canvas = new GtkCanvas.GtkCanvas();
-            canvas.CanvasModel = canvasModel;
-            GtkToolbox toolbox = new GtkToolbox(this, toolboxModel);
+            canvas.CanvasModel = windowModel.LayoutCanvas;
+            GtkToolbar toolbar = new GtkToolbar(this, windowModel.ToolbarModel);
+            GtkToolbox toolbox = new GtkToolbox(windowModel.ToolboxModel);
 
+            HPaned hbox = new HPaned();
+            hbox.Add1(toolbox);
+            hbox.Add2(canvas);
+            
             VBox vbox = new VBox(false, 0);
+            vbox.PackStart(toolbar, false, false, 0);
+            vbox.PackEnd(hbox, true, true, 0);
+
             this.Add(vbox);
-            vbox.PackStart(toolbox, false, false, 0);
-            vbox.PackEnd(canvas, true, true, 0);
             this.SetDefaultSize(980, 600);
             this.ShowAll();
-
             canvas.GrabFocus();
         }
 
-        protected override bool OnDeleteEvent(Gdk.Event evnt)
-        {
-            canvas.CanvasModel.Disable();
+        protected override bool OnDeleteEvent(Gdk.Event evnt) {
+            windowModel.Dispose();
             Application.Quit();
             return true;
         }

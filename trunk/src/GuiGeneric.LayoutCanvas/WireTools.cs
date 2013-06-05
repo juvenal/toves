@@ -45,9 +45,9 @@ namespace Toves.GuiGeneric.LayoutCanvas
             for (int i = 0; i < w0s.Count; i++) {
                 uf[w0s[i]].Unite(uf[w1s[i]]);
             }
-            foreach (UnionFind<WireSegment>.Node root in uf.Roots) {
+            foreach (UnionFindNode<WireSegment> root in uf.Roots) {
                 List<Location> locs = new List<Location>();
-                foreach (UnionFind<WireSegment>.Node member in root.GetSetMembers()) {
+                foreach (UnionFindNode<WireSegment> member in root.GetSetMembers()) {
                     WireSegment w = member.Value;
                     lo.RemoveWire(w);
                     locs.Add(w.End0);

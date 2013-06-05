@@ -16,6 +16,8 @@ namespace Toves.Components.Gates
                 Port.newOutput(0, 0), Port.newInput(-64, 0) });
         }
 
+        public override string Name { get { return "NOT Gate"; } }
+
         public override bool Contains(int offsetX, int offsetY)
         {
             if (OffsetBounds.Contains(offsetX, offsetY, 5)) {

@@ -28,8 +28,7 @@ namespace Toves.Layout.Model
 
         public event EventHandler<LayoutModifiedArgs> LayoutModifiedEvent;
         
-        protected virtual void OnLayoutModified(ILayoutAccess access)
-        {
+        protected virtual void OnLayoutModified(ILayoutAccess access) {
             EventHandler<LayoutModifiedArgs> handler = LayoutModifiedEvent;
             if (handler != null) {
                 handler(this, new LayoutModifiedArgs(access));

@@ -9,6 +9,8 @@ namespace Toves.Components.Gates
 {
     public class OrGate : BasicGate
     {
+        public override string Name { get { return "OR Gate"; } }
+
         public override bool Contains(int offsetX, int offsetY)
         {
             if (this.OffsetBounds.Contains(offsetX, offsetY, 5)) {

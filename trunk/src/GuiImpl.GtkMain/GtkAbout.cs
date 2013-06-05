@@ -22,7 +22,7 @@ namespace Toves.GuiImpl.GtkMain {
             vbox.PackEnd(new Label(""), true, true, 0);
 
             HBox hbox = new HBox();
-            Image img = GtkToolbox.GetImage("tove.png");
+            Image img = GtkMain.GetImage("tove.png");
             hbox.BorderWidth = 10;
             hbox.Spacing = 10;
             hbox.Add(img);

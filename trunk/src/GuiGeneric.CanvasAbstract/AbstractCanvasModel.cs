@@ -52,8 +52,6 @@ namespace Toves.GuiGeneric.CanvasAbstract
                 PointerEventType.GestureCancel);
         }
 
-        public abstract void Disable();
-
         public ICanvas Canvas { get; set; }
         
         public double Zoom { get; set; }

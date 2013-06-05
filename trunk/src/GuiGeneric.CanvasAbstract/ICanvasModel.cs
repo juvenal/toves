@@ -21,8 +21,6 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void RepaintCanvas();
 
         void Paint(IPaintbrush brush);
-
-        void Disable();
     }
 }
 
