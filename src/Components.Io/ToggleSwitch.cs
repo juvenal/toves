@@ -22,6 +22,8 @@ namespace Toves.Components.Io
             SharePorts(new Port[] { Port.newOutput(0, 0) });
         }
 
+        public override string Name { get { return "Toggle Switch"; } }
+
         public override bool Contains(int offsetX, int offsetY)
         {
             return OffsetBounds.Contains(offsetX, offsetY, 5);

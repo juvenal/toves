@@ -15,6 +15,8 @@ namespace Toves.Components.Io
             SharePorts(new Port[] { Port.newInput(0, 0) });
         }
         
+        public override string Name { get { return "LED"; } }
+
         public override bool Contains(int offsetX, int offsetY)
         {
             return OffsetBounds.Contains(offsetX, offsetY, 5)

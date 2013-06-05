@@ -146,17 +146,17 @@ namespace Toves.Layout.Model
 
             UnionFind<Location> allNodes = new UnionFind<Location>(locs);
             foreach (WireSegment w in layout.Wires) {
-                UnionFind<Location>.Node e0 = allNodes[w.End0];
-                UnionFind<Location>.Node e1 = allNodes[w.End1];
+                UnionFindNode<Location> e0 = allNodes[w.End0];
+                UnionFindNode<Location> e1 = allNodes[w.End1];
                 e0.Unite(e1);
             }
 
-            IEnumerable<UnionFind<Location>.Node> roots = allNodes.Roots;
+            IEnumerable<UnionFindNode<Location>> roots = allNodes.Roots;
             List<LocationSet> result = new List<LocationSet>();
-            foreach (UnionFind<Location>.Node root in roots) {
-                IEnumerable<UnionFind<Location>.Node> rootMembers = root.GetSetMembers();
+            foreach (UnionFindNode<Location> root in roots) {
+                IEnumerable<UnionFindNode<Location>> rootMembers = root.GetSetMembers();
                 List<Location> setMembers = new List<Location>();
-                foreach (UnionFind<Location>.Node n in rootMembers) {
+                foreach (UnionFindNode<Location> n in rootMembers) {
                     setMembers.Add(n.Value);
                 }
                 result.Add(new LocationSet(setMembers));

@@ -9,10 +9,8 @@ using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
 
-namespace Toves.Layout.Sim
-{
-    public class LayoutSimulation
-    {
+namespace Toves.Layout.Sim {
+    public class LayoutSimulation {
         private static readonly bool Debug = false;
 
         private SimulationModel simModel = new SimulationModel();
@@ -20,8 +18,17 @@ namespace Toves.Layout.Sim
         private Dictionary<Component, ComponentInstance> instanceMap = new Dictionary<Component, ComponentInstance>();
 
         public LayoutSimulation(LayoutModel model) {
+            this.LayoutModel = model;
             model.LayoutModifiedEvent += onUpdate;
+
+            Transaction xn = new Transaction();
+            ILayoutAccess layout = xn.RequestReadAccess(model);
+            using (xn.Start()) {
+                onUpdate(null, new LayoutModifiedArgs(layout));
+            }
         }
+
+        public LayoutModel LayoutModel { get; private set; }
 
         public SimulationModel SimulationModel { get { return simModel; } }
 

@@ -9,6 +9,8 @@ namespace Toves.Layout.Comp
 {
     public abstract class Component
     {
+        public abstract string Name { get; }
+
         public Location Location { get; private set; }
 
         public void SetLocation(LayoutKey key, Location value)

@@ -8,10 +8,8 @@ using Toves.Layout.Model;
 using Toves.GuiGeneric.CanvasAbstract;
 using Toves.Sim.Inst;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class GestureAdd : IGesture
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class GestureAdd : IGesture {
         private LayoutCanvasModel layoutModel;
         private Component master;
         private ComponentInstance masterInstance;
@@ -20,8 +18,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
 
         public event EventHandler<GestureCompleteArgs> GestureCompleteEvent;
 
-        public GestureAdd(LayoutCanvasModel layoutModel, Component master)
-        {
+        public GestureAdd(LayoutCanvasModel layoutModel, Component master) {
             this.layoutModel = layoutModel;
             this.current = new Location(0, 0);
             this.currentValid = false;
@@ -29,8 +26,9 @@ namespace Toves.GuiGeneric.LayoutCanvas
             this.masterInstance = master.CreateInstance();
         }
 
-        private bool Update(IPointerEvent evnt)
-        {
+        public Component Master { get { return master; } }
+
+        private bool Update(IPointerEvent evnt) {
             Location cur = current;
             Location next = new Location(evnt.X, evnt.Y);
             if (master.ShouldSnap) {
@@ -40,35 +38,31 @@ namespace Toves.GuiGeneric.LayoutCanvas
                 return false;
             } else {
                 current = next;
-                currentValid = true;
+                currentValid = layoutModel.Layout != null;
                 return true;
             }
         }
 
-        public void GestureStart(IPointerEvent evnt)
-        {
+        public void GestureStart(IPointerEvent evnt) {
             if (Update(evnt)) {
                 evnt.RepaintCanvas();
             }
         }
 
-        public void GestureMove(IPointerEvent evnt)
-        {
+        public void GestureMove(IPointerEvent evnt) {
             if (Update(evnt)) {
                 evnt.RepaintCanvas();
             }
         }
 
-        protected virtual void OnGestureCompleteEvent(bool success)
-        {
+        protected virtual void OnGestureCompleteEvent(bool success) {
             EventHandler<GestureCompleteArgs> handler = GestureCompleteEvent;
             if (handler != null) {
                 handler(this, new GestureCompleteArgs(success));
             }
         }
 
-        public void GestureComplete(IPointerEvent evnt)
-        {
+        public void GestureComplete(IPointerEvent evnt) {
             Location cur = current;
             if (currentValid) {
                 // Console.WriteLine("**** Adding {0} ****", master.GetType().Name);
@@ -84,16 +78,14 @@ namespace Toves.GuiGeneric.LayoutCanvas
             evnt.RepaintCanvas();
         }
 
-        public void GestureCancel(IPointerEvent evnt)
-        {
+        public void GestureCancel(IPointerEvent evnt) {
             this.current = new Location(0, 0);
             this.currentValid = false;
             OnGestureCompleteEvent(false);
             evnt.RepaintCanvas();
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             Location cur = current;
             IComponentPainter ip = new ComponentPainter(pb, new DummyInstanceState(masterInstance));
             pb.TranslateCoordinates(cur.X, cur.Y);

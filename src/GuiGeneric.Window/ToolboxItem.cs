@@ -2,7 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Engine
-{
+namespace Toves.GuiGeneric.Window {
+    public abstract class ToolboxItem {
+        public abstract String Name { get; }
+    }
 }
 

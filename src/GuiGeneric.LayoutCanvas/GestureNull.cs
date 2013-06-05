@@ -9,21 +9,17 @@ using Toves.Layout.Model;
 using Toves.Sim.Inst;
 using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class GestureNull : IGesture
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class GestureNull : IGesture {
         private LayoutCanvasModel layoutModel;
         private Location? current;
 
-        public GestureNull(LayoutCanvasModel layoutModel)
-        {
+        public GestureNull(LayoutCanvasModel layoutModel) {
             this.layoutModel = layoutModel;
             this.current = null;
         }
 
-        public void GestureStart(IPointerEvent evnt)
-        {
+        public void GestureStart(IPointerEvent evnt) {
             IGesture newGesture = GetGesture(evnt);
             if (newGesture != null) {
                 if (current != null) {
@@ -35,8 +31,10 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        private IGesture GetGesture(IPointerEvent evnt)
-        {
+        private IGesture GetGesture(IPointerEvent evnt) {
+            if (layoutModel.WiringPoints == null) {
+                return null;
+            }
             Location eLoc = new Location(evnt.X, evnt.Y);
             Location snapLoc = Constants.SnapToGrid(eLoc);
             if (layoutModel.WiringPoints.Contains(snapLoc)) {
@@ -69,35 +67,33 @@ namespace Toves.GuiGeneric.LayoutCanvas
         }
 
 
-        public void GestureMove(IPointerEvent evnt)
-        {
-            Location eLoc = new Location(evnt.X, evnt.Y);
-            Location snapLoc = Constants.SnapToGrid(eLoc);
-            if (layoutModel.WiringPoints.Contains(snapLoc)) {
-                if (current != snapLoc) {
-                    current = snapLoc;
-                    evnt.RepaintCanvas();
-                }
-            } else {
-                if (current != null) {
-                    current = null;
-                    evnt.RepaintCanvas();
+        public void GestureMove(IPointerEvent evnt) {
+            if (layoutModel.WiringPoints != null) {
+                Location eLoc = new Location(evnt.X, evnt.Y);
+                Location snapLoc = Constants.SnapToGrid(eLoc);
+                if (layoutModel.WiringPoints.Contains(snapLoc)) {
+                    if (current != snapLoc) {
+                        current = snapLoc;
+                        evnt.RepaintCanvas();
+                    }
+                } else {
+                    if (current != null) {
+                        current = null;
+                        evnt.RepaintCanvas();
+                    }
                 }
             }
         }
 
-        public void GestureComplete(IPointerEvent evnt)
-        {
+        public void GestureComplete(IPointerEvent evnt) {
             GestureMove(evnt);
         }
 
-        public void GestureCancel(IPointerEvent evnt)
-        {
+        public void GestureCancel(IPointerEvent evnt) {
             this.current = null;
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             if (current != null) {
                 pb.Color = Constants.GetColorFor(Value.One);
                 pb.StrokeCircle(current.Value.X, current.Value.Y, Constants.WIRING_READY_RADIUS);

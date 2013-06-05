@@ -5,30 +5,25 @@ using System.Threading;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class SimulationThread
-    {
+namespace Toves.GuiGeneric.Window {
+    public class SimulationThread {
         private SimulationModel simModel;
         private Thread thread = null;
         private bool stopRequested = false;
         private object monitor = new object();
 
-        public SimulationThread(SimulationModel simModel)
-        {
+        public SimulationThread(SimulationModel simModel) {
             this.simModel = simModel;
         }
 
-        public void Start()
-        {
+        public void Start() {
             if (thread == null) {
                 thread = new Thread(new ThreadStart(this.Run));
                 thread.Start();
             }
         }
 
-        private void Run()
-        {
+        private void Run() {
             while (true) {
                 Transaction xn = new Transaction();
                 ISimulationAccess testSim = xn.RequestReadAccess(simModel);
