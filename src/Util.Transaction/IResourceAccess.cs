@@ -12,6 +12,10 @@ namespace Toves.Util.Transaction
 
         bool IsLive { get; }
 
+        void CheckReadAccess();
+
+        void CheckWriteAccess();
+
         void Downgrade();
 
         void Acquire();

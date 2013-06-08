@@ -6,13 +6,13 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
 using Toves.Sim.Inst;
+using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class GestureTranslate : IGesture
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class GestureTranslate : IGesture {
         private LayoutCanvasModel layoutModel;
         private ComponentInstance moving;
+        private Location movingLocation;
         private int initX = 0;
         private int initY = 0;
         private int curDx = 0;
@@ -20,18 +20,22 @@ namespace Toves.GuiGeneric.LayoutCanvas
         private bool curValid = true;
 
         public GestureTranslate(LayoutCanvasModel layoutModel,
-                                ComponentInstance moving)
-        {
+                                ComponentInstance moving) {
             this.layoutModel = layoutModel;
             this.moving = moving;
+
+            Transaction xn = new Transaction();
+            ILayoutAccess layout = xn.RequestReadAccess(layoutModel.Layout);
+            using (xn.Start()) {
+                this.movingLocation = moving.Component.GetLocation(layout);
+            }
         }
 
-        private bool Update(IPointerEvent evnt)
-        {
+        private bool Update(IPointerEvent evnt) {
             if (moving == null) return false;
             int dx = evnt.X - initX;
             int dy = evnt.Y - initY;
-            Location loc = moving.Component.Location;
+            Location loc = movingLocation;
             if (moving.Component.ShouldSnap) {
                 Location newLoc = loc.Translate(dx, dy);
                 newLoc = Constants.SnapToGrid(newLoc);
@@ -49,8 +53,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        public void GestureStart(IPointerEvent evnt)
-        {
+        public void GestureStart(IPointerEvent evnt) {
             initX = evnt.X;
             initY = evnt.Y;
             layoutModel.Hidden = new Component[] { moving.Component };
@@ -58,23 +61,21 @@ namespace Toves.GuiGeneric.LayoutCanvas
             evnt.RepaintCanvas();
         }
 
-        public void GestureMove(IPointerEvent evnt)
-        {
+        public void GestureMove(IPointerEvent evnt) {
             if (Update(evnt)) {
                 evnt.RepaintCanvas();
             }
         }
 
-        public void GestureComplete(IPointerEvent evnt)
-        {
+        public void GestureComplete(IPointerEvent evnt) {
             ComponentInstance toMove = moving;
             if (toMove != null) {
                 moving = null;
                 layoutModel.Execute((ILayoutAccess lo) => {
                     Component comp = toMove.Component;
-                    Location[] toCheck = new Location[comp.Ports.Length];
+                    Location[] toCheck = new Location[comp.Connections.Length];
                     for (int i = 0; i < toCheck.Length; i++) {
-                        toCheck[i] = comp.Location.Translate(comp.Ports[i].Dx, comp.Ports[i].Dy);
+                        toCheck[i] = movingLocation.Translate(comp.Connections[i].Dx, comp.Connections[i].Dy);
                     }
 
                     if (curValid) {
@@ -103,8 +104,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
             evnt.RepaintCanvas();
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             ComponentInstance cur = moving;
             if (cur != null) {
                 if (curValid) {
@@ -112,7 +112,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
                 } else {
                     pb.Color = Constants.COLOR_DEAD;
                 }
-                Location loc = cur.Component.Location;
+                Location loc = movingLocation;
                 pb.TranslateCoordinates(loc.X + curDx, loc.Y + curDy);
                 cur.Component.Paint(new ComponentPainter(pb, new DummyInstanceState(cur)));
             }

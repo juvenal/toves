@@ -66,14 +66,14 @@ namespace Toves.Layout.Sim {
                     Console.WriteLine("Circuit edited");
                 }
                 foreach (Component comp in layout.Components) {
-                    Location cloc = comp.Location;
+                    Location cloc = comp.GetLocation(layout);
                     String cstr = null;
                     ComponentInstance instance = instanceMap[comp];
-                    Toves.Layout.Comp.Port[] compPorts = comp.Ports;
+                    Toves.Layout.Comp.ConnectionPoint[] compPorts = comp.Connections;
                     int i = -1;
                     foreach (Toves.Sim.Model.Port ip in instance.Ports) {
                         i++;
-                        Toves.Layout.Comp.Port cp = compPorts[i];
+                        Toves.Layout.Comp.ConnectionPoint cp = compPorts[i];
                         Location ploc = cloc.Translate(cp.Dx, cp.Dy);
                         if (Debug) {
                             if (i == 0) {

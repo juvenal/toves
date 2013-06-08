@@ -2,8 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 using Toves.Layout.Model;
+using Toves.Proj.Model;
 
-namespace Toves.Proj {
+namespace Toves.Proj.Module {
     public class ProjectModule {
         private Project.Key key;
         private String name;
@@ -16,6 +17,8 @@ namespace Toves.Proj {
             this.name = name;
             this.Layout = new LayoutModel();
         }
+
+        public Presentation Presentation { get; private set; }
 
         public LayoutModel Layout { get; private set; }
         

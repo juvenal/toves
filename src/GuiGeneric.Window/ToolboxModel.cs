@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using Toves.Layout.Comp;
 using Toves.Components.Gates;
 using Toves.Components.Io;
-using Toves.Proj;
+using Toves.Components.Wiring;
+using Toves.Proj.Model;
+using Toves.Proj.Module;
 using Toves.Util.Transaction;
 
 namespace Toves.GuiGeneric.Window {
@@ -21,6 +23,10 @@ namespace Toves.GuiGeneric.Window {
             public override String Name { get { return name; } }
 
             internal ProjectModule Module { get; private set; }
+
+            internal void SetName(string value) {
+                this.name = value;
+            }
         }
 
         private class ToolboxComponent : ToolboxItem {
@@ -35,35 +41,138 @@ namespace Toves.GuiGeneric.Window {
 
         private WindowModel window;
         private IEnumerable<ToolboxDrawer> drawers;
-        private List<ToolboxModule> modules;
+        private List<ToolboxModule> modules = new List<ToolboxModule>();
+        private ToolboxModule currentModule = null;
 
         public ToolboxModel(WindowModel window) {
             this.window = window;
+
+            Transaction xn = new Transaction();
+            IProjectAccess proj = xn.RequestReadAccess(window.Project);
+            using (xn.Start()) {
+                foreach (ProjectModule mod in proj.GetModules()) {
+                    string modName = proj.GetModuleName(mod);
+                    ToolboxModule toAdd = new ToolboxModule(mod, modName);
+                    if (mod == window.CurrentModule) {
+                        toAdd.SetName(toAdd.Name + "*");
+                        currentModule = toAdd;
+                    }
+                    modules.Add(toAdd);
+                }
+            }
+            window.Project.ProjectModifiedEvent += RefreshModules;
+
             List<ToolboxItem> builtins = new List<ToolboxItem>();
             Component[] masters = {
                 new ToggleSwitch(),
                 new AndGate(),
                 new OrGate(),
                 new NotGate(),
-                new Led()
+                new Led(),
+                new Pin(),
+                new PinOut()
             };
             foreach (Component master in masters) {
                 builtins.Add(new ToolboxComponent(master));
-            }
-
-            modules = new List<ToolboxModule>();
-            Transaction xn = new Transaction();
-            IProjectAccess proj = xn.RequestReadAccess(window.Project);
-            using (xn.Start()) {
-                foreach (ProjectModule mod in proj.GetModules()) {
-                    modules.Add(new ToolboxModule(mod, proj.GetModuleName(mod)));
-                }
             }
 
             List<ToolboxDrawer> drawers = new List<ToolboxDrawer>();
             drawers.Add(new ToolboxDrawer("Project", modules.AsReadOnly()));
             drawers.Add(new ToolboxDrawer("Built-Ins", builtins.AsReadOnly()));
             this.drawers = drawers.AsReadOnly();
+        }
+
+        public event EventHandler<ToolboxChangedArgs> ToolboxChangedEvent;
+
+        private void RefreshModules(object src, ProjectModifiedArgs args) {
+            ProjectModule changedModule = args.ChangedModule;
+            ToolboxItem changedItem = null;
+
+            Transaction xn = new Transaction();
+            IProjectAccess proj = xn.RequestReadAccess(window.Project);
+            using (xn.Start()) {
+                Dictionary<ProjectModule, ToolboxModule> oldItems = new Dictionary<ProjectModule, ToolboxModule>();
+                List<ToolboxModule> newModules = new List<ToolboxModule>();
+                foreach (ToolboxModule item in modules) {
+                    oldItems[item.Module] = item;
+                    if (item.Module == changedModule) {
+                        changedItem = item;
+                    }
+                }
+                foreach (ProjectModule mod in proj.GetModules()) {
+                    string curName = proj.GetModuleName(mod);
+                    ToolboxModule nextItem;
+                    if (oldItems.TryGetValue(mod, out nextItem)) {
+                        if (nextItem.Name != curName) {
+                            nextItem.SetName(curName);
+                        }
+                    } else {
+                        nextItem = new ToolboxModule(mod, curName);
+                    }
+                    newModules.Add(nextItem);
+                    if (nextItem.Module == changedModule) {
+                        changedItem = nextItem;
+                    }
+                }
+                this.modules.Clear();
+                foreach (ToolboxModule item in newModules) {
+                    this.modules.Add(item);
+                }
+            }
+
+            EventHandler<ToolboxChangedArgs> handler = ToolboxChangedEvent;
+            if (handler != null && changedItem != null) {
+                ToolboxChangedArgs.ChangeTypes changeType;
+                bool found = true;
+                switch (args.ChangeType) {
+                case ProjectModifiedArgs.ChangeTypes.ModuleAdded:
+                    changeType = ToolboxChangedArgs.ChangeTypes.ItemAdded;
+                    break;
+                case ProjectModifiedArgs.ChangeTypes.ModuleRemoved:
+                    changeType = ToolboxChangedArgs.ChangeTypes.ItemRemoved;
+                    break;
+                case ProjectModifiedArgs.ChangeTypes.ModuleRenamed:
+                    changeType = ToolboxChangedArgs.ChangeTypes.ItemRenamed;
+                    break;
+                default:
+                    changeType = ToolboxChangedArgs.ChangeTypes.ItemAdded; // unused value to trick compiler
+                    found = false;
+                    break;
+                }
+                if (found) {
+                    handler(this, new ToolboxChangedArgs(changeType, changedItem));
+                }
+            }
+        }
+
+        internal void UpdateCurrent(ProjectModule newValue) {
+            ToolboxModule newCurrent = null;
+            foreach (ToolboxDrawer drawer in drawers) {
+                foreach (ToolboxItem rawItem in drawer.GetContents()) {
+                    ToolboxModule item = rawItem as ToolboxModule;
+                    if (item != null && item.Module == newValue) {
+                        newCurrent = item;
+                    }
+                }
+            }
+
+            ToolboxModule oldCurrent = currentModule;
+            if (oldCurrent != newCurrent) {
+                EventHandler<ToolboxChangedArgs> handler = ToolboxChangedEvent;
+                if (oldCurrent != null && oldCurrent.Name.EndsWith("*")) {
+                    oldCurrent.SetName(oldCurrent.Name.Substring(0, oldCurrent.Name.Length - 1));
+                    if (handler != null) {
+                        handler(this, new ToolboxChangedArgs(ToolboxChangedArgs.ChangeTypes.ItemRenamed, oldCurrent));
+                    }
+                }
+                if (newCurrent != null) {
+                    newCurrent.SetName(newCurrent.Name + "*");
+                    if (handler != null) {
+                        handler(this, new ToolboxChangedArgs(ToolboxChangedArgs.ChangeTypes.ItemRenamed, newCurrent));
+                    }
+                }
+                currentModule = newCurrent;
+            }
         }
 
         public IEnumerable<ToolboxDrawer> Drawers {

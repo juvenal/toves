@@ -48,7 +48,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
         {
             using (IPaintbrush pb = this.Create()) {
                 int i = -1;
-                foreach (Port p in Instance.Component.Ports) {
+                foreach (ConnectionPoint p in Instance.Component.Connections) {
                     i++;
                     this.SetColorFor(InstanceState.Get(i));
                     this.FillCircle(p.Dx, p.Dy, 8);

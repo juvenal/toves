@@ -29,13 +29,13 @@ namespace Toves.Util.Transaction
 
         public bool IsLive { get; private set; }
 
-        protected void CheckReadAccess() {
+        public void CheckReadAccess() {
             if (!IsLive) {
                 throw new InvalidOperationException("attempt to access outside transaction");
             }
         }
 
-        protected void CheckWriteAccess() {
+        public void CheckWriteAccess() {
             if (!IsLive || !CanWrite) {
                 throw new InvalidOperationException("attempt to access outside transaction");
             }

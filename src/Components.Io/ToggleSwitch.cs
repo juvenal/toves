@@ -19,7 +19,7 @@ namespace Toves.Components.Io
         public ToggleSwitch()
         {
             ShareOffsetBounds(new Bounds(-64, -32, 64, 64));
-            SharePorts(new Port[] { Port.newOutput(0, 0) });
+            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newOutput(0, 0) });
         }
 
         public override string Name { get { return "Toggle Switch"; } }

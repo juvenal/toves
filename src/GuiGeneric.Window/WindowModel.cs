@@ -1,14 +1,20 @@
 /* Copyright (c) 2013, Carl Burch.  License information is in the GtkMain.cs
  * source file and at www.toves.org/. */
 using System;
+using System.Collections.Generic;
 using Toves.GuiGeneric.LayoutCanvas;
+using Toves.GuiGeneric.Menu;
 using Toves.Layout.Comp;
 using Toves.Layout.Sim;
-using Toves.Proj;
+using Toves.Proj.Model;
+using Toves.Proj.Module;
 
 namespace Toves.GuiGeneric.Window {
     public class WindowModel : IDisposable {
         private SimulationThread simThread;
+        private Dictionary<ProjectModule, LayoutSimulation> moduleSimulations
+            = new Dictionary<ProjectModule, LayoutSimulation>();
+        private List<GenericMenu> menus = new List<GenericMenu>();
 
         public WindowModel() {
             this.Project = new Project();
@@ -16,9 +22,15 @@ namespace Toves.GuiGeneric.Window {
             this.ToolboxModel = new ToolboxModel(this);
             this.ToolbarModel = new ToolbarModel(this);
             this.simThread = null;
+
+            menus.Add(new ProjectMenu(this));
         }
 
         public Project Project { get; private set; }
+
+        public ProjectModule CurrentModule { get; private set; }
+
+        public IEnumerable<GenericMenu> Menus { get { return menus; } }
 
         public LayoutCanvasModel LayoutCanvas { get; private set; }
 
@@ -31,7 +43,11 @@ namespace Toves.GuiGeneric.Window {
         }
 
         public void SetView(ProjectModule module) {
-            LayoutSimulation layoutSim = new LayoutSimulation(module.Layout);
+            LayoutSimulation layoutSim;
+            if (!moduleSimulations.TryGetValue(module, out layoutSim)) {
+                layoutSim = new LayoutSimulation(module.Layout);
+                moduleSimulations[module] = layoutSim;
+            }
             SimulationThread newThread = new SimulationThread(layoutSim.SimulationModel);
             newThread.Start();
             SimulationThread oldThread = simThread;
@@ -39,6 +55,8 @@ namespace Toves.GuiGeneric.Window {
             if (oldThread != null) {
                 oldThread.RequestStop();
             }
+            this.CurrentModule = module;
+            ToolboxModel.UpdateCurrent(module);
             LayoutCanvas.SetView(module.Layout, layoutSim);
         }
 

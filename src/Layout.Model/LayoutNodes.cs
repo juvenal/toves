@@ -138,8 +138,8 @@ namespace Toves.Layout.Model
                 locs.Add(w.End1);
             }
             foreach (Component c in layout.Components) {
-                Location cloc = c.Location;
-                foreach (Port p in c.Ports) {
+                Location cloc = c.GetLocation(layout);
+                foreach (ConnectionPoint p in c.Connections) {
                     locs.Add(cloc.Translate(p.Dx, p.Dy));
                 }
             }

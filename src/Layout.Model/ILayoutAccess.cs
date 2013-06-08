@@ -6,10 +6,8 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Util.Transaction;
 
-namespace Toves.Layout.Model
-{
-    public interface ILayoutAccess : IResourceAccess
-    {
+namespace Toves.Layout.Model {
+    public interface ILayoutAccess : IResourceAccess {
         IEnumerable<Component> Components { get; }
 
         IEnumerable<WireSegment> Wires { get; }
