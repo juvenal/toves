@@ -5,14 +5,11 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Gates
-{
-    public class AndGate : BasicGate
-    {
+namespace Toves.Components.Gates {
+    public class AndGate : BasicGate {
         public override string Name { get { return "AND Gate"; } }
 
-        public override bool Contains(int offsetX, int offsetY)
-        {
+        public override bool Contains(int offsetX, int offsetY) {
             if (this.OffsetBounds.Contains(offsetX, offsetY, 5)) {
                 if (offsetX < -48) {
                     return true;
@@ -24,15 +21,13 @@ namespace Toves.Components.Gates
             }
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state)
-        {
+        public override void Propagate(ComponentInstance instance, IInstanceState state) {
             Value in1 = state.Get(1);
             Value in2 = state.Get(2);
             state.Set(0, in1.And(in2), 1);
         }
 
-        public override void Paint(IComponentPainter painter)
-        {
+        public override void Paint(IComponentPainter painter) {
             painter.StrokeWidth = 10;
             painter.StrokeArc(-48, 0, 48, -90, 180);
             painter.StrokeLines(

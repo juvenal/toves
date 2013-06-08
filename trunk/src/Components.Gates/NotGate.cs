@@ -12,8 +12,8 @@ namespace Toves.Components.Gates
         public NotGate()
         {
             ShareOffsetBounds(new Bounds(-64, -20, 64, 40));
-            SharePorts(new Port[] {
-                Port.newOutput(0, 0), Port.newInput(-64, 0) });
+            ShareConnections(new ConnectionPoint[] {
+                ConnectionPoint.newOutput(0, 0), ConnectionPoint.newInput(-64, 0) });
         }
 
         public override string Name { get { return "NOT Gate"; } }

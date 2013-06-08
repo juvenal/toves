@@ -49,7 +49,7 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             ILayoutAccess lo = xn.RequestReadAccess(layoutModel.Layout);
             using (xn.Start()) {
                 foreach (Component component in lo.Components) {
-                    Location iloc = component.Location;
+                    Location iloc = component.GetLocation(lo);
                     if (component.Contains(eLoc.X - iloc.X, eLoc.Y - iloc.Y)) {
                         found = layoutModel.LayoutSim.GetInstance(lo, component);
                     }

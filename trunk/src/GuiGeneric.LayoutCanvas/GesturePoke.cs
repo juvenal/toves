@@ -9,10 +9,8 @@ using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class GesturePoke : IGesture
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class GesturePoke : IGesture {
         private class MyPokeEvent : PokeEventArgs {
             private IPointerEvent evnt;
             internal bool repropagateRequested = false;
@@ -44,18 +42,23 @@ namespace Toves.GuiGeneric.LayoutCanvas
 
         private LayoutCanvasModel layoutModel;
         private ComponentInstance poking;
+        private Location pokingLocation;
 
-        public GesturePoke(LayoutCanvasModel layoutModel, ComponentInstance poking)
-        {
+        public GesturePoke(LayoutCanvasModel layoutModel, ComponentInstance poking) {
             this.layoutModel = layoutModel;
             this.poking = poking;
+
+            Transaction xn = new Transaction();
+            ILayoutAccess layout = xn.RequestReadAccess(layoutModel.Layout);
+            using (xn.Start()) {
+                pokingLocation = poking.Component.GetLocation(layout);
+            }
         }
 
-        private void Send(PokeEventType type, IPointerEvent evnt)
-        {
+        private void Send(PokeEventType type, IPointerEvent evnt) {
             if (poking != null) {
                 Pokeable dest = poking.Component as Pokeable;
-                Location loc = poking.Component.Location;
+                Location loc = pokingLocation;
                 MyPokeEvent pokeEvnt = new MyPokeEvent(type, evnt.X - loc.X, evnt.Y - loc.Y, evnt);
                 dest.ProcessPokeEvent(pokeEvnt);
                 if (pokeEvnt.StateUpdate != null || pokeEvnt.repropagateRequested) {
@@ -73,18 +76,15 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        public void GestureStart(IPointerEvent evnt)
-        {
+        public void GestureStart(IPointerEvent evnt) {
             Send(PokeEventType.PokeStart, evnt);
         }
 
-        public void GestureMove(IPointerEvent evnt)
-        {
+        public void GestureMove(IPointerEvent evnt) {
             Send(PokeEventType.PokeMove, evnt);
         }
 
-        public void GestureComplete(IPointerEvent evnt)
-        {
+        public void GestureComplete(IPointerEvent evnt) {
             Send(PokeEventType.PokeEnd, evnt);
             layoutModel.Gesture = null;
         }
@@ -100,7 +100,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
         {
             ComponentInstance cur = poking;
             if (cur != null) {
-                Location loc = cur.Component.Location;
+                Location loc = pokingLocation;
                 pb.TranslateCoordinates(loc.X, loc.Y);
                 Pokeable dest = cur.Component as Pokeable;
                 dest.PaintPokeProgress(new ComponentPainter(pb, new DummyInstanceState(cur)));

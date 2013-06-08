@@ -61,8 +61,8 @@ namespace Toves.GuiGeneric.LayoutCanvas
         public static void CheckForSplits(ILayoutAccess lo, LayoutWiringPoints wireData, IEnumerable<Component> toCheck) {
             Dictionary<WireSegment, List<Location>> breaks = new Dictionary<WireSegment, List<Location>>();
             foreach (Component comp in toCheck) {
-                foreach (Port p in comp.Ports) {
-                    Location pLoc = comp.Location.Translate(p.Dx, p.Dy);
+                foreach (ConnectionPoint p in comp.Connections) {
+                    Location pLoc = comp.GetLocation(lo).Translate(p.Dx, p.Dy);
                     foreach (WireSegment w in wireData.GetWiresContaining(pLoc)) {
                         List<Location> wLocs;
                         bool found = breaks.TryGetValue(w, out wLocs);

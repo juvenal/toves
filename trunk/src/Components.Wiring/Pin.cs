@@ -5,37 +5,34 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Io {
-    public class Led : ComponentSharedData {
-        public Led() {
-            ShareOffsetBounds(new Bounds(0, -32, 64, 64));
-            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newInput(0, 0) });
+namespace Toves.Components.Wiring {
+    public class Pin : ComponentSharedData {
+        public Pin() {
+            ShareOffsetBounds(new Bounds(-64, -32, 64, 64));
+            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newOutput(0, 0) });
         }
-        
-        public override string Name { get { return "LED"; } }
+
+        public override string Name { get { return "Pin"; } }
 
         public override bool Contains(int offsetX, int offsetY) {
-            return OffsetBounds.Contains(offsetX, offsetY, 5)
-                && (new Location(offsetX, offsetY).InCircle(32, 0, 37));
+            return OffsetBounds.Contains(offsetX, offsetY, 5);
         }
-        
+
         public override void Propagate(ComponentInstance instance, IInstanceState state) {
+            state.Set(0, Value.Z, 1);
         }
-        
+
         public override void Paint(IComponentPainter painter) {
             Value value = painter.GetPortValue(0);
 
             painter.StrokeWidth = 10;
-            painter.Color = painter.GetColorFor(value);
-            painter.FillCircle(32, 0, 32);
             painter.Color = 0;
-            painter.StrokeCircle(32, 0, 32);
+            painter.StrokeRectangle(-64, -32, 64, 64);
             painter.FontSize = 48;
             painter.FontStyle = Toves.GuiGeneric.CanvasAbstract.FontStyle.Bold;
             painter.Color = 0x0000ff;
-            painter.DrawText(32, -4, value.ToString(), TextAlign.Center | TextAlign.VCenter);
+            painter.DrawText(-32, -4, value.ToString(), TextAlign.Center | TextAlign.VCenter);
             painter.PaintPorts();
         }
     }
 }
-

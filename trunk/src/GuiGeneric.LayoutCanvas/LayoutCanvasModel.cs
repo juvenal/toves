@@ -113,7 +113,7 @@ namespace Toves.GuiGeneric.LayoutCanvas {
                 ip.InstanceState = state;
                 foreach (Component component in layout.Components) {
                     if (noHidden || !hidden.Contains(component)) {
-                        Location loc = component.Location;
+                        Location loc = component.GetLocation(layout);
                         using (IPaintbrush pbSub = pb.Create()) {
                             pbSub.TranslateCoordinates(loc.X, loc.Y);
                             ip.Paintbrush = pbSub;

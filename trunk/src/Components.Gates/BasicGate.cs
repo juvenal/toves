@@ -12,9 +12,9 @@ namespace Toves.Components.Gates
         public BasicGate()
         {
             this.ShareOffsetBounds(new Bounds(-96, -48, 96, 96));
-            this.SharePorts(new Port[] {
-                Port.newOutput(0, 0), Port.newInput(-96, -32),
-                Port.newInput(-96, 32) });
+            this.ShareConnections(new ConnectionPoint[] {
+                ConnectionPoint.newOutput(0, 0), ConnectionPoint.newInput(-96, -32),
+                ConnectionPoint.newInput(-96, 32) });
         }
 
         public abstract override bool Contains(int offsetX, int offsetY);

@@ -3,14 +3,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace Toves.Layout.Data
-{
-    public struct Location
-    {
-        private class XComparerImpl : IComparer<Location>
-        {
-            public int Compare(Location a, Location b)
-            {
+namespace Toves.Layout.Data {
+    public struct Location {
+        private class XComparerImpl : IComparer<Location> {
+            public int Compare(Location a, Location b) {
                 int x = a.x.CompareTo(b.x);
                 if (x != 0) {
                     return x;
@@ -20,7 +16,20 @@ namespace Toves.Layout.Data
             }
         }
 
+        private class YComparerImpl : IComparer<Location> {
+            public int Compare(Location a, Location b) {
+                int y = a.y.CompareTo(b.y);
+                if (y != 0) {
+                    return y;
+                }
+                int x = a.x.CompareTo(b.x);
+                return x;
+            }
+        }
+
         public static readonly IComparer<Location> XComparer = new XComparerImpl();
+
+        public static readonly IComparer<Location> YComparer = new YComparerImpl();
 
         private int x;
         private int y;

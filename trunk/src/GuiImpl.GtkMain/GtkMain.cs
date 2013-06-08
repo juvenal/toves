@@ -49,16 +49,18 @@ namespace Toves.GuiImpl.GtkMain {
         private GtkCanvas.GtkCanvas canvas;
 
         public GtkMain () : base("Toves") {
-            canvas = new GtkCanvas.GtkCanvas();
-            canvas.CanvasModel = windowModel.LayoutCanvas;
+            MenuBar menubar = GtkMenu.Create(this, windowModel);
             GtkToolbar toolbar = new GtkToolbar(this, windowModel.ToolbarModel);
             GtkToolbox toolbox = new GtkToolbox(windowModel.ToolboxModel);
+            canvas = new GtkCanvas.GtkCanvas();
+            canvas.CanvasModel = windowModel.LayoutCanvas;
 
             HPaned hbox = new HPaned();
             hbox.Add1(toolbox);
             hbox.Add2(canvas);
             
             VBox vbox = new VBox(false, 0);
+            vbox.PackStart(menubar, false, false, 0);
             vbox.PackStart(toolbar, false, false, 0);
             vbox.PackEnd(hbox, true, true, 0);
 

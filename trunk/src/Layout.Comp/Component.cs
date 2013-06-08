@@ -5,25 +5,25 @@ using Toves.Layout.Data;
 using Toves.Layout.Model;
 using Toves.Sim.Inst;
 
-namespace Toves.Layout.Comp
-{
-    public abstract class Component
-    {
+namespace Toves.Layout.Comp {
+    public abstract class Component {
+        private Location location;
+
         public abstract string Name { get; }
 
-        public Location Location { get; private set; }
+        public Location GetLocation(ILayoutAccess access) {
+            access.CheckReadAccess();
+            return this.location;
+        }
 
-        public void SetLocation(LayoutKey key, Location value)
-        {
-            if (key == null) {
-                throw new InvalidOperationException("key needed");
-            }
-            this.Location = value;
+        public void SetLocation(ILayoutAccess access, Location value) {
+            access.CheckWriteAccess();
+            this.location = value;
         }
 
         public abstract PortArgs[] PortArgs { get; }
 
-        public abstract Port[] Ports { get; }
+        public abstract ConnectionPoint[] Connections { get; }
 
         public abstract Bounds OffsetBounds { get; }
 
@@ -31,13 +31,11 @@ namespace Toves.Layout.Comp
 
         public abstract bool Contains(int offsetX, int offsetY);
 
-        public Component Clone()
-        {
+        public Component Clone() {
             return (this.MemberwiseClone() as Component);
         }
 
-        public virtual ComponentInstance CreateInstance()
-        {
+        public virtual ComponentInstance CreateInstance() {
             return new ComponentInstance(this);
         }
 
@@ -46,4 +44,3 @@ namespace Toves.Layout.Comp
         public abstract void Paint(IComponentPainter painter);
     }
 }
-

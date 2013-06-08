@@ -148,9 +148,9 @@ namespace Toves.GuiGeneric.LayoutCanvas
                     }
                 }
                 foreach (Component component in lo.Components) {
-                    Location iloc = component.Location;
+                    Location iloc = component.GetLocation(lo);
                     int i = -1;
-                    foreach (Port port in component.Ports) {
+                    foreach (ConnectionPoint port in component.Connections) {
                         i++;
                         Location loc = iloc.Translate(port.Dx, port.Dy);
                         GetPointData(pts, loc).AddPort(component, i);

@@ -59,12 +59,6 @@ namespace Toves.Layout.Model
             this.layout = layout;
         }
 
-        /*
-        internal void SetReadOnly() {
-            canWrite = false;
-        }
-        */
-
         public IEnumerable<Component> Components {
             get {
                 CheckReadAccess();
@@ -91,35 +85,31 @@ namespace Toves.Layout.Model
             return layout.nodes.GetNode(loc);
         }
 
-        public Component AddComponent(Component prototype, int x, int y)
-        {
+        public Component AddComponent(Component prototype, int x, int y) {
             CheckWriteAccess();
             Component clone = prototype.Clone();
-            clone.SetLocation(key, new Location(x, y));
+            clone.SetLocation(this, new Location(x, y));
             layout.components.Add(clone);
             return clone;
         }
 
-        public void RemoveComponent(Component component)
-        {
+        public void RemoveComponent(Component component) {
             CheckWriteAccess();
             layout.components.Remove(component);
         }
 
-        public void MoveComponent(Component component, int dx, int dy)
-        {
+        public void MoveComponent(Component component, int dx, int dy) {
             CheckWriteAccess();
-            component.SetLocation(key, component.Location.Translate(dx, dy));
+            Location curLoc = component.GetLocation(this);
+            component.SetLocation(this, curLoc.Translate(dx, dy));
         }
 
-        public void AddWire(Location end0, Location end1)
-        {
+        public void AddWire(Location end0, Location end1) {
             CheckWriteAccess();
             layout.wires.Add(new WireSegment(end0, end1));
         }
 
-        public void RemoveWire(WireSegment wire)
-        {
+        public void RemoveWire(WireSegment wire) {
             CheckWriteAccess();
             layout.wires.Remove(wire);
         }

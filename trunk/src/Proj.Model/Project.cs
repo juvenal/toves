@@ -3,8 +3,9 @@
 using System;
 using System.Collections.Generic;
 using Toves.Util.Transaction;
+using Toves.Proj.Module;
 
-namespace Toves.Proj {
+namespace Toves.Proj.Model {
     public class Project : Resource<IProjectAccess> {
         public class Key {
             internal Key(Project proj) {
@@ -19,6 +20,8 @@ namespace Toves.Proj {
 
         private class ProjectAccess : ResourceAccess, IProjectAccess {
             private Key key;
+
+            internal List<ProjectModifiedArgs> toIssue = new List<ProjectModifiedArgs>();
 
             internal ProjectAccess(Key key, bool writing) : base(key.Project, writing) {
                 this.key = key;
@@ -44,22 +47,37 @@ namespace Toves.Proj {
                 return module.GetName(key);
             }
 
-            public void AddModule(String name) {
+            public ProjectModule AddModule(String name) {
                 CheckWriteAccess();
                 ProjectModule found = GetModule(name);
                 if (found != null) {
                     throw new InvalidOperationException("module already exists by that name");
                 }
-                key.Project.modules.Add(new ProjectModule(key, name));
+                ProjectModule toAdd = new ProjectModule(key, name);
+                key.Project.modules.Add(toAdd);
+                toIssue.Add(new ProjectModifiedArgs(this, ProjectModifiedArgs.ChangeTypes.ModuleAdded, toAdd));
+                return toAdd;
+            }
+
+            public bool RemoveModule(ProjectModule toRemove) {
+                bool success = key.Project.modules.Remove(toRemove);
+                if (success) {
+                    toIssue.Add(new ProjectModifiedArgs(this,
+                                ProjectModifiedArgs.ChangeTypes.ModuleRemoved, toRemove));
+                }
+                return success;
             }
 
             public void SetModuleName(ProjectModule module, String value) {
                 CheckReadAccess();
                 ProjectModule found = GetModule(value);
-                if (found != null && found != module) {
+                if (found == null) {
+                    module.SetName(key, value);
+                    toIssue.Add(new ProjectModifiedArgs(this,
+                                                        ProjectModifiedArgs.ChangeTypes.ModuleRenamed, module));
+                } else if (found != module) {
                     throw new InvalidOperationException("module already exists by that name");
                 }
-                module.SetName(key, value);
             }
 
         }
@@ -86,11 +104,12 @@ namespace Toves.Proj {
             if (type == ResourceHookType.AfterDowngrade) {
                 EventHandler<ProjectModifiedArgs> handler = ProjectModifiedEvent;
                 if (handler != null) {
-                    handler(this, new ProjectModifiedArgs(access as IProjectAccess));
+                    ProjectAccess projAccess = access as ProjectAccess;
+                    foreach (ProjectModifiedArgs args in projAccess.toIssue) {
+                        handler(this, args);
+                    }
                 }
             }
         }
-
     }
 }
-

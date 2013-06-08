@@ -3,15 +3,16 @@
 using System;
 using System.Collections.Generic;
 using Toves.Util.Transaction;
+using Toves.Proj.Module;
 
-namespace Toves.Proj
-{
+namespace Toves.Proj.Model {
     public interface IProjectAccess : IResourceAccess {
         IEnumerable<ProjectModule> GetModules();
         ProjectModule GetModule(String name);
         string GetModuleName(ProjectModule module);
 
-        void AddModule(String name);
+        ProjectModule AddModule(String name);
+        bool RemoveModule(ProjectModule module);
         void SetModuleName(ProjectModule module, String value);
     }
 }

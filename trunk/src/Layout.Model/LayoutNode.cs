@@ -56,16 +56,15 @@ namespace Toves.Layout.Model
                 }
             }
 
-            private IEnumerable<LocationSet> getCurrentLocationSets(ILayoutAccess layout)
-            {
+            private IEnumerable<LocationSet> getCurrentLocationSets(ILayoutAccess layout) {
                 HashSet<Location> locs = new HashSet<Location>();
                 foreach (WireSegment w in layout.Wires) {
                     locs.Add(w.End0);
                     locs.Add(w.End1);
                 }
                 foreach (Component c in layout.Components) {
-                    Location cloc = c.Location;
-                    foreach (Port p in c.Ports) {
+                    Location cloc = c.GetLocation(layout);
+                    foreach (ConnectionPoint p in c.Connections) {
                         locs.Add(cloc.Translate(p.Dx, p.Dy));
                     }
                 }
