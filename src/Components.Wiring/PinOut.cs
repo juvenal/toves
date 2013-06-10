@@ -9,18 +9,16 @@ namespace Toves.Components.Wiring {
     public class PinOut : ComponentSharedData {
         public PinOut() {
             ShareOffsetBounds(new Bounds(0, -32, 64, 64));
-            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newOutput(0, 0) });
+            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newPassive(0, 0) });
         }
 
-        public override string Name { get { return "Pin"; } }
+        public override string Name { get { return "Output Pin"; } }
 
         public override bool Contains(int offsetX, int offsetY) {
             return OffsetBounds.Contains(offsetX, offsetY, 5);
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state) {
-            state.Set(0, Value.Z, 1);
-        }
+        public override void Propagate(ComponentInstance instance, IInstanceState state) { }
 
         public override void Paint(IComponentPainter painter) {
             Value value = painter.GetPortValue(0);

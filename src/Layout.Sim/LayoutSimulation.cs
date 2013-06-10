@@ -13,19 +13,17 @@ namespace Toves.Layout.Sim {
     public class LayoutSimulation {
         private static readonly bool Debug = false;
 
-        private SimulationModel simModel = new SimulationModel();
+        private SimulationModel simModel;
+        private bool activated = false;
         private Dictionary<LayoutNode, Node> nodeMap = new Dictionary<LayoutNode, Node>();
         private Dictionary<Component, ComponentInstance> instanceMap = new Dictionary<Component, ComponentInstance>();
 
-        public LayoutSimulation(LayoutModel model) {
+        public LayoutSimulation(SimulationModel simModel, LayoutModel model) {
+            this.simModel = simModel;
             this.LayoutModel = model;
-            model.LayoutModifiedEvent += onUpdate;
+            model.LayoutModifiedEvent += OnUpdate;
 
-            Transaction xn = new Transaction();
-            ILayoutAccess layout = xn.RequestReadAccess(model);
-            using (xn.Start()) {
-                onUpdate(null, new LayoutModifiedArgs(layout));
-            }
+            Configure(null);
         }
 
         public LayoutModel LayoutModel { get; private set; }
@@ -33,6 +31,8 @@ namespace Toves.Layout.Sim {
         public SimulationModel SimulationModel { get { return simModel; } }
 
         public Value GetValueAt(ILayoutAccess layout, ISimulationAccess sim, Location loc) {
+            layout.CheckReadAccess();
+            sim.CheckReadAccess();
             LayoutNode sup = layout.FindNode(loc);
             if (nodeMap.ContainsKey(sup)) {
                 return sim.Get(nodeMap[sup]);
@@ -41,20 +41,38 @@ namespace Toves.Layout.Sim {
             }
         }
 
-        public ComponentInstance GetInstance(ILayoutAccess access, Component component) {
+        public ComponentInstance GetInstance(ILayoutAccess layout, Component component) {
+            layout.CheckReadAccess();
             return instanceMap[component];
         }
 
-        private void onUpdate(object sender, LayoutModifiedArgs args) {
-            ILayoutAccess layout = args.Layout;
-            foreach (LayoutNode node in layout.Nodes) {
-                if (!nodeMap.ContainsKey(node)) {
-                    nodeMap[node] = new Node();
+        public void SetActivated(bool value) {
+            if (value != activated) {
+                if (value) {
+                    Configure(null);
+                } else {
+                    Clear();
                 }
             }
+        }
+
+        private void OnUpdate(object sender, LayoutModifiedArgs args) {
+            Configure(args.Layout);
+        }
+
+        private void Configure(ILayoutAccess layout) {
+            activated = true;
             Transaction xn = new Transaction();
             ISimulationAccess sim = xn.RequestWriteAccess(simModel);
+            if (layout == null) {
+                layout = xn.RequestReadAccess(this.LayoutModel);
+            }
             using (xn.Start()) {
+                foreach (LayoutNode node in layout.Nodes) {
+                    if (!nodeMap.ContainsKey(node)) {
+                        nodeMap[node] = new Node();
+                    }
+                }
                 foreach (Component comp in layout.Components) {
                     if (!instanceMap.ContainsKey(comp)) {
                         ComponentInstance instance = comp.CreateInstance();
@@ -69,11 +87,11 @@ namespace Toves.Layout.Sim {
                     Location cloc = comp.GetLocation(layout);
                     String cstr = null;
                     ComponentInstance instance = instanceMap[comp];
-                    Toves.Layout.Comp.ConnectionPoint[] compPorts = comp.Connections;
+                    ConnectionPoint[] compConns = comp.Connections;
                     int i = -1;
-                    foreach (Toves.Sim.Model.Port ip in instance.Ports) {
+                    foreach (Port port in instance.Ports) {
                         i++;
-                        Toves.Layout.Comp.ConnectionPoint cp = compPorts[i];
+                        ConnectionPoint cp = compConns[i];
                         Location ploc = cloc.Translate(cp.Dx, cp.Dy);
                         if (Debug) {
                             if (i == 0) {
@@ -83,17 +101,19 @@ namespace Toves.Layout.Sim {
                             }
                             Console.WriteLine("  {0}.{1}: {2} [{3}]", cstr, i, layout.FindNode(ploc), ploc);
                         }
-                        LinkPortTo(sim, ip, nodeMap[layout.FindNode(ploc)]);
+                        LinkPortTo(sim, port, nodeMap[layout.FindNode(ploc)]);
                     }
                 }
             }
         }
 
-        private void LinkPortTo(ISimulationAccess sim, Toves.Sim.Model.Port ip, Node nDesired) {
+        private void LinkPortTo(ISimulationAccess sim, Port port, Node nDesired) {
             Node nCurrent = null;
             List<Node> nRemove = null;
-            foreach (Node n in ip.Neighbors) {
-                if (nCurrent == null) {
+            foreach (Node n in port.Neighbors) {
+                if (n is Port) {
+                    // ignore - this is a link to the submodule's circuit
+                } else if (nCurrent == null) {
                     nCurrent = n;
                 } else {
                     if (nRemove == null) {
@@ -105,26 +125,42 @@ namespace Toves.Layout.Sim {
             if (nRemove != null) {
                 foreach (Node n in nRemove) {
                     if (Debug) {
-                        Console.WriteLine("    remove link {0}-{0}", ip, n);
+                        Console.WriteLine("    remove link {0}-{0}", port, n);
                     }
-                    sim.RemoveLink(new Link(ip, n));
+                    sim.RemoveLink(new Link(port, n));
                 }
             }
             if (nDesired != nCurrent) {
                 if (nCurrent != null) {
                     if (Debug) {
-                        Console.WriteLine("    remove link {0}-{1}", ip, nCurrent);
+                        Console.WriteLine("    remove link {0}-{1}", port, nCurrent);
                     }
-                    sim.RemoveLink(new Link(ip, nCurrent));
+                    sim.RemoveLink(new Link(port, nCurrent));
                 }
                 if (nDesired != null) {
                     if (Debug) {
-                        Console.WriteLine("    add link {0}-{1}", ip, nDesired);
+                        Console.WriteLine("    add link {0}-{1}", port, nDesired);
                     }
-                    sim.AddLink(new Link(ip, nDesired));
+                    sim.AddLink(new Link(port, nDesired));
                 }
             }
         }
+        
+        private void Clear() {
+            Transaction xn = new Transaction();
+            ISimulationAccess sim = xn.RequestWriteAccess(simModel);
+            using (xn.Start()) {
+                foreach (Instance i in instanceMap.Values) {
+                    sim.RemoveInstance(i);
+                }
+                foreach (Node u in nodeMap.Values) {
+                    foreach (Link link in u.Links) {
+                        sim.RemoveLink(link);
+                    }
+                }
+            }
+        }
+
     }
 }
 

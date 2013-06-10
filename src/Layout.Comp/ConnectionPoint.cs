@@ -8,9 +8,13 @@ namespace Toves.Layout.Comp {
         public static ConnectionPoint newInput(int dx, int dy) {
             return new ConnectionPoint(dx, dy, PortType.Input);
         }
-
+        
         public static ConnectionPoint newOutput(int dx, int dy) {
             return new ConnectionPoint(dx, dy, PortType.Output);
+        }
+        
+        public static ConnectionPoint newPassive(int dx, int dy) {
+            return new ConnectionPoint(dx, dy, PortType.Passive);
         }
 
         private ConnectionPoint(int dx, int dy, PortType type) : base(type, 1) {

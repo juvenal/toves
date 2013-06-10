@@ -3,15 +3,15 @@
 using System;
 using Toves.Sim.Model;
 
-namespace Toves.Sim.Inst
-{
-    public class DummyInstanceState : IInstanceState
-    {
+namespace Toves.Sim.Inst {
+    public class DummyInstanceState : IInstanceState {
         public DummyInstanceState(Instance instance) {
             this.Instance = instance;
         }
 
         public Instance Instance { get; private set; }
+
+        public SimulationModel Simulation { get { return null; } }
 
         public Value Get(int index) {
             int width = 1;

@@ -180,8 +180,17 @@ namespace Toves.GuiGeneric.Window {
         }
 
         public void SelectItem(ToolboxItem item) {
+            Component master;
             if (item is ToolboxComponent) {
-                window.BeginAdd(((ToolboxComponent) item).Component, null);
+                master = ((ToolboxComponent) item).Component;
+            } else if (item is ToolboxModule) {
+                ProjectModule module = ((ToolboxModule) item).Module;
+                master = new LayoutComponent(window.Project, module);
+            } else {
+                master = null;
+            }
+            if (master != null) {
+                window.BeginAdd(master, null);
             }
         }
 

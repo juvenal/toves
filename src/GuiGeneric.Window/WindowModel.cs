@@ -8,6 +8,7 @@ using Toves.Layout.Comp;
 using Toves.Layout.Sim;
 using Toves.Proj.Model;
 using Toves.Proj.Module;
+using Toves.Sim.Model;
 
 namespace Toves.GuiGeneric.Window {
     public class WindowModel : IDisposable {
@@ -45,7 +46,8 @@ namespace Toves.GuiGeneric.Window {
         public void SetView(ProjectModule module) {
             LayoutSimulation layoutSim;
             if (!moduleSimulations.TryGetValue(module, out layoutSim)) {
-                layoutSim = new LayoutSimulation(module.Layout);
+                SimulationModel simModel = new SimulationModel();
+                layoutSim = new LayoutSimulation(simModel, module.Layout);
                 moduleSimulations[module] = layoutSim;
             }
             SimulationThread newThread = new SimulationThread(layoutSim.SimulationModel);

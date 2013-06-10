@@ -6,10 +6,8 @@ using System.Text;
 using Toves.Sim.Inst;
 using Toves.Util.Collections;
 
-namespace Toves.Sim.Model
-{
-    public class Subnet
-    {
+namespace Toves.Sim.Model {
+    public class Subnet {
         private static readonly bool Debug = false;
         private static int lastIdAllocated = -1;
         private static readonly ICollection<Port> EmptyPortList = new List<Port>().AsReadOnly();
@@ -30,29 +28,27 @@ namespace Toves.Sim.Model
         
         public IEnumerable<Port> Readers { get { return readers; } }
 
-        public override string ToString()
-        {
+        internal IEnumerable<Node> Nodes { get { return nodes; } }
+
+        public override string ToString() {
             return String.Format("net{0}", id);
         }
 
-        public Value GetValue(SimulationModel.Key key)
-        {
+        public Value GetValue(SimulationModel.Key key) {
             if (key == null) {
                 throw new ArgumentException("key needed");
             }
             return value;
         }
 
-        public void SetValue(SimulationModel.Key key, Value value)
-        {
+        public void SetValue(SimulationModel.Key key, Value value) {
             if (key == null) {
                 throw new ArgumentException("key needed");
             }
             this.value = value;
         }
 
-        public static List<Subnet> UpdateNets(SimulationModel.Key key, ISimulationAccess model, List<Subnet> oldNets)
-        {
+        public static List<Subnet> UpdateNets(SimulationModel.Key key, ISimulationAccess model, List<Subnet> oldNets) {
             if (key == null) {
                 throw new ArgumentException("key needed");
             }
@@ -90,7 +86,9 @@ namespace Toves.Sim.Model
                     }
                 } else if (newNets.Count == 1 && EqualsListsShallow(oldNet.nodes, newNets[0].nodes)) {
                     if (Debug) {
-                        Console.WriteLine("   {0} unchanged: {1}", oldNet, ",".JoinObjectStrings(oldNet.nodes));
+                        Console.WriteLine("   {0} unchanged: drivers {1} readers {2} nodes {3}", oldNet,
+                                          ",".JoinObjectStrings(oldNet.drivers), ",".JoinObjectStrings(oldNet.readers),
+                                          ",".JoinObjectStrings(oldNet.nodes));
                     }
                     allNewNets.Add(oldNet); // just keep the old net, since they're identical
                 } else {
@@ -101,7 +99,9 @@ namespace Toves.Sim.Model
                         ProcessPortsAndSetSubnets(key, newNet);
                         key.Engine.AddDirtyNet(newNet);
                         if (Debug) {
-                            Console.WriteLine("   {0} to {1}: nodes {2}", oldNet, newNet, ",".JoinObjectStrings(newNet.nodes));
+                            Console.WriteLine("   {0} to {1}: drivers {2} readers {3} nodes {4}", oldNet, newNet,
+                                              ",".JoinObjectStrings(newNet.drivers), ",".JoinObjectStrings(newNet.readers),
+                                              ",".JoinObjectStrings(newNet.nodes));
                         }
                     }
                 }
@@ -111,14 +111,18 @@ namespace Toves.Sim.Model
                     Subnet net = FindSubnetFrom(key, node);
                     allNewNets.Add(net);
                     ProcessPortsAndSetSubnets(key, net);
+                    if (Debug) {
+                        Console.WriteLine("dflt net {0}: drivers {1}, readers {2}, nodes {3}", net,
+                                          ",".JoinObjectStrings(net.drivers), ",".JoinObjectStrings(net.readers),
+                                          ",".JoinObjectStrings(net.nodes));
+                    }
                 }
             }
 
             return allNewNets;
         }
 
-        private static Subnet FindSubnetFrom(SimulationModel.Key key, Node start)
-        {
+        private static Subnet FindSubnetFrom(SimulationModel.Key key, Node start) {
             int id = lastIdAllocated + 1;
             lastIdAllocated = id;
             Subnet net = new Subnet(id);
@@ -171,39 +175,6 @@ namespace Toves.Sim.Model
             net.readers = readers;
             net.drivers = drivers;
         }
-
-            /*
-                    foreach (Link link in node.Links) {
-                        Node n0 = link.Source;
-                        Node n1 = link.Destination;
-                        Subnet s0 = n0.TempSubnet as Subnet;
-                        Subnet s1 = n1.TempSubnet as Subnet;
-                        if (s0 == null) {
-                            if (s1 == null) {
-                                s1 = new Subnet();
-                                s1.allNodes.Add(n1);
-                                n1.SetTempSubnet(key, s1);
-                            }
-                            s1.allNodes.Add(n0);
-                            n0.SetTempSubnet(key, s1);
-                        } else if (s1 == null) {
-                            s0.allNodes.Add(n1);
-                            n1.SetTempSubnet(key, s0);
-                        } else {
-                            if (s1.allNodes.Count < s0.allNodes.Count) {
-                                Subnet st = s0;
-                                s0 = s1;
-                                s1 = st;
-                            }
-                            // s0 is now the smaller one, to be merged into s1
-                            foreach (Node n in s0.allNodes) {
-                                n.SetTempSubnet(key, s1);
-                                s1.allNodes.Add(n);
-                            }
-                        }
-                    }
-                    */
-
     }
 }
 

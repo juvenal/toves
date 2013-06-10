@@ -35,6 +35,17 @@ namespace Toves.Proj.Module {
             get { return connections; }
         }
 
+        public IEnumerator<Component> Pins {
+            get {
+                foreach (Pin p in inputs) {
+                    yield return p;
+                }
+                foreach (PinOut p in outputs) {
+                    yield return p;
+                }
+            }
+        }
+
         private void Update(object sender, LayoutModifiedArgs args) {
             ILayoutAccess layout = args.Layout;
             List<Pin> newInputs = new List<Pin>();
@@ -50,18 +61,18 @@ namespace Toves.Proj.Module {
             int outCount = newOutputs.Count;
             int gridHeight = Math.Max(inCount, outCount);
             int height = 32 * (gridHeight + 1);
-            int yOffs = -32 * ((gridHeight + 1) / 2);
-            Bounds newBounds = new Bounds(-30, yOffs, 30, height);
+            int yOffs = -32 * ((gridHeight / 2) + 1);
+            Bounds newBounds = new Bounds(-96, yOffs, 96, height);
             ConnectionPoint[] newConns = new ConnectionPoint[inCount + outCount];
             newInputs.Sort((p0, p1) => Location.YComparer.Compare(p0.GetLocation(layout), p1.GetLocation(layout)));
             newOutputs.Sort((p0, p1) => Location.YComparer.Compare(p0.GetLocation(layout), p1.GetLocation(layout)));
-            int inOffs = -32 * ((inCount + 1) / 2);
-            int outOffs = -32 * ((outCount + 1) / 2);
+            int inOffs = -32 * (inCount / 2);
+            int outOffs = -32 * (outCount / 2);
             for (int i = 0; i < newConns.Length; i++) {
                 if (i < inCount) {
-                    newConns[i] = ConnectionPoint.newInput(-30, inOffs + 32 * i);
+                    newConns[i] = ConnectionPoint.newPassive(-96, inOffs + 32 * i);
                 } else {
-                    newConns[i] = ConnectionPoint.newOutput(0, outOffs + 32 * (i - inCount));
+                    newConns[i] = ConnectionPoint.newPassive(0, outOffs + 32 * (i - inCount));
                 }
             }
 
@@ -75,11 +86,10 @@ namespace Toves.Proj.Module {
             Bounds bds = bounds;
             painter.StrokeWidth = 10;
             painter.Color = 0x888888;
-            painter.StrokeArc(bds.X + bds.Width / 2, bds.Y, 16, -180, 180);
+            painter.StrokeArc(bds.X + bds.Width / 2, bds.Y, 16, 0, 180);
             painter.Color = 0;
             painter.StrokeRectangle(bds.X, bds.Y, bds.Width, bds.Height);
             painter.PaintPorts();
         }
     }
 }
-

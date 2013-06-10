@@ -2,15 +2,12 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Model
-{
-    public class Link
-    {
+namespace Toves.Sim.Model {
+    public class Link {
         private Node source;
         private Node destination;
 
-        public Link(Node source, Node destination)
-        {
+        public Link(Node source, Node destination) {
             this.source = source;
             this.destination = destination;
         }
@@ -23,19 +20,20 @@ namespace Toves.Sim.Model
             return source.GetHashCode() * 31 + destination.GetHashCode();
         }
         
-        public bool Equals(Link obj)
-        {
+        public bool Equals(Link obj) {
             return this.source == obj.source && this.destination == obj.destination;
         }
         
-        public override bool Equals(object obj)
-        {
+        public override bool Equals(object obj) {
             if (obj is Link) {
                 return this.Equals((Link) obj);
             } else {
                 return false;
             }
         }
+
+        public override string ToString() {
+            return string.Format("{0}-{1}", source, destination);
+        }
     }
 }
-

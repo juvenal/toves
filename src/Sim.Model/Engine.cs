@@ -6,27 +6,22 @@ using System.Threading;
 using Toves.Util.Collections;
 using Toves.Sim.Inst;
 
-namespace Toves.Sim.Model
-{
-    public class Engine
-    {
+namespace Toves.Sim.Model {
+    public class Engine {
         private static readonly bool Debug = false;
 
-        private struct SetEvent : IComparable<SetEvent>
-        {
+        private struct SetEvent : IComparable<SetEvent> {
             internal Port port;
             internal Value value;
             internal long when;
             
-            internal SetEvent(Port port, Value value, long when)
-            {
+            internal SetEvent(Port port, Value value, long when) {
                 this.port = port;
                 this.value = value;
                 this.when = when;
             }
             
-            public int CompareTo(SetEvent other)
-            {
+            public int CompareTo(SetEvent other) {
                 long diff = this.when - other.when; // if overflow occurs here, it is OK
                 return diff < 0 ? -1 : diff > 0 ? 1 : 0;
             }
@@ -38,16 +33,14 @@ namespace Toves.Sim.Model
         private HashSet<Instance> dirtyInstances = new HashSet<Instance>();
         private bool anyDirty = false;
 
-        public Engine()
-        {
+        public Engine() {
         }
 
         public bool IsStepPending() {
             return anyDirty;
         }
 
-        public void QueueSet(Port port, Value value, int delay)
-        {
+        public void QueueSet(Port port, Value value, int delay) {
             if (delay <= 0) {
                 throw new ArgumentException("delay must be at least 1");
             }
@@ -55,8 +48,7 @@ namespace Toves.Sim.Model
             anyDirty = true;
         }
 
-        public void AddDirtyInstance(Instance instance)
-        {
+        public void AddDirtyInstance(Instance instance) {
             dirtyInstances.Add(instance);
             anyDirty = true;
             if (Debug) {
@@ -64,8 +56,7 @@ namespace Toves.Sim.Model
             }
         }
 
-        public void AddDirtyNet(Subnet net)
-        {
+        public void AddDirtyNet(Subnet net) {
             dirtyNets.Add(net);
             anyDirty = true;
             if (Debug) {
@@ -73,8 +64,7 @@ namespace Toves.Sim.Model
             }
         }
 
-        public void Step(SimulationModel.Key key, ISimulationAccess access)
-        {
+        public void Step(SimulationModel.Key key, ISimulationAccess access) {
             long now = curTime + 1;
             curTime = now;
             if (Debug) {
@@ -101,17 +91,25 @@ namespace Toves.Sim.Model
             anyDirty = events.Count > 0 || dirtyNets.Count > 0 || dirtyInstances.Count > 0;
         }
 
-        private void ClearDirty(SimulationModel.Key key, ISimulationAccess access)
-        {
+        private void ClearDirty(SimulationModel.Key key, ISimulationAccess access) {
             HashSet<Subnet> nets = dirtyNets;
             HashSet<Instance> instances = dirtyInstances;
             if (nets != null && nets.Count > 0) {
                 dirtyNets = new HashSet<Subnet>();
                 foreach (Subnet net in nets) {
+                    if (Debug) {
+                        Console.Write("  net {0} /", net);
+                    }
                     Value v = null;
                     foreach (Port p in net.Drivers) {
                         Value u = p.GetDrivenValue(key);
+                        if (Debug) {
+                            Console.Write("{0}/", u);
+                        }
                         v = v == null ? u : v.Resolve(u);
+                    }
+                    if (Debug) {
+                        Console.WriteLine("-> {0}", v);
                     }
                     if (v == null) {
                         int w = net.Width;
@@ -121,13 +119,11 @@ namespace Toves.Sim.Model
                     foreach (Port p in net.Readers) {
                         instances.Add(p.Instance);
                     }
-                    if (Debug) {
-                        Console.WriteLine("  net {0} -> {1}", net, v);
-                    }
                 }
             }
 
             if (instances != null && instances.Count > 0) {
+                InstanceEvent evnt = new InstanceEvent(InstanceEvent.Types.InstanceDirty);
                 InstanceState iState = new InstanceState(access, null);
                 dirtyInstances = new HashSet<Instance>();
                 foreach (Instance instance in instances) {
@@ -135,7 +131,7 @@ namespace Toves.Sim.Model
                         Console.WriteLine("  propagate instance {0}", instance);
                     }
                     iState.Instance = instance;
-                    instance.Propagate(iState);
+                    instance.HandleEvent(evnt, iState);
                 }
             }
         }
