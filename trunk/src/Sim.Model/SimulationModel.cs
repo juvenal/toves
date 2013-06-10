@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using Toves.Sim.Inst;
 using Toves.Util.Transaction;
+using Toves.Util.Collections;
 
-namespace Toves.Sim.Model
-{
-    public class SimulationModel : Resource<ISimulationAccess>
-    {
-        public sealed class Key
-        {
+namespace Toves.Sim.Model {
+    public class SimulationModel : Resource<ISimulationAccess> {
+        private static readonly bool Debug = false;
+        private static readonly bool DebugAfterUpdates = false;
+
+        public sealed class Key {
             private SimulationModel model;
 
             internal Key(SimulationModel model) {
@@ -21,29 +22,27 @@ namespace Toves.Sim.Model
             }
 
             public Engine Engine { get { return model.engine; } }
-            
-            /*
-            public void Set(Port port, Value value, int delay)
-            {
-            }
-            */
         }
 
-        private class Access : ResourceAccess, ISimulationAccess
-        {
+        private class Access : ResourceAccess, ISimulationAccess {
             private SimulationModel sim;
+            internal List<Instance> instancesAdded = null;
+            internal List<Instance> instancesRemoved = null;
             internal List<Node> dirtyNodes = null;
             internal bool netsChanged = false;
             
-            internal Access(SimulationModel sim, bool canWrite) : base(sim, canWrite)
-            {
+            internal Access(SimulationModel sim, bool canWrite) : base(sim, canWrite) {
                 this.sim = sim;
+            }
+
+            public SimulationModel Simulation {
+                get { return sim; }
             }
 
             public IEnumerable<Node> Nodes {
                 get {
                     CheckReadAccess();
-                    return sim.nodes.AsReadOnly();
+                    return sim.nodes;
                 }
             }
             
@@ -56,6 +55,9 @@ namespace Toves.Sim.Model
             
             public void AddLink(Link value) {
                 CheckWriteAccess();
+                if (Debug) {
+                    Console.Error.WriteLine("{0}: add link {1}", sim, value);
+                }                          
                 Node n0 = value.Source;
                 Node n1 = value.Destination;
                 sim.nodes.Add(n0);
@@ -73,6 +75,9 @@ namespace Toves.Sim.Model
             
             public void RemoveLink(Link value) {
                 CheckWriteAccess();
+                if (Debug) {
+                    Console.Error.WriteLine("{0}: remove link {1}", sim, value);
+                }                          
                 Node n0 = value.Source;
                 Node n1 = value.Destination;
                 n0.RemoveLink(sim.key, value);
@@ -94,6 +99,11 @@ namespace Toves.Sim.Model
             
             public void AddInstance(Instance value) {
                 CheckWriteAccess();
+                if (Debug) {
+                    Console.Error.WriteLine("{0}: add instance {1} [ports {2}]", sim, value,
+                                            ",".JoinObjectStrings(value.Ports));
+                }                          
+
                 sim.instances.Add(value);
                 foreach (Port p in value.Ports) {
                     p.AddToUseCount(sim.key, 1);
@@ -101,10 +111,18 @@ namespace Toves.Sim.Model
                 }
                 sim.engine.AddDirtyInstance(value);
                 netsChanged = true;
+                if (instancesAdded == null) {
+                    instancesAdded = new List<Instance>();
+                }
+                instancesAdded.Add(value);
             }
             
             public void RemoveInstance(Instance value) {
                 CheckWriteAccess();
+                if (Debug) {
+                    Console.Error.WriteLine("{0}: remove link {1}", sim, value);
+                }                          
+
                 sim.instances.Remove(value);
                 foreach (Port p in value.Ports) {
                     p.AddToUseCount(sim.key, -1);
@@ -113,10 +131,13 @@ namespace Toves.Sim.Model
                     }
                 }
                 netsChanged = true;
+                if (instancesRemoved == null) {
+                    instancesRemoved = new List<Instance>();
+                }
+                instancesRemoved.Add(value);
             }
 
-            public Value Get(Node n)
-            {
+            public Value Get(Node n) {
                 CheckReadAccess();
                 Subnet sub = n.Subnet;
                 Value val = sub == null ? null : sub.GetValue(sim.key);
@@ -130,8 +151,7 @@ namespace Toves.Sim.Model
                 return val ?? Value.X;
             }
             
-            public Value GetDriven(Port port)
-            {
+            public Value GetDriven(Port port) {
                 CheckReadAccess();
                 if (port.IsOutput) {
                     Value pVal = port.GetDrivenValue(sim.key);
@@ -141,8 +161,7 @@ namespace Toves.Sim.Model
                 }
             }
 
-            public void Set(Port port, Value value, int delay)
-            {
+            public void Set(Port port, Value value, int delay) {
                 CheckWriteAccess();
                 if (port.IsOutput) {
                     sim.engine.QueueSet(port, value, delay);
@@ -151,20 +170,17 @@ namespace Toves.Sim.Model
                 }
             }
 
-            public void MarkInstanceDirty(Instance value)
-            {
+            public void MarkInstanceDirty(Instance value) {
                 CheckWriteAccess();
                 sim.engine.AddDirtyInstance(value);
             }
 
-            public bool IsStepPending()
-            {
+            public bool IsStepPending() {
                 CheckReadAccess();
                 return sim.engine.IsStepPending();
             }
 
-            public void StepSimulation()
-            {
+            public void StepSimulation() {
                 CheckWriteAccess();
                 sim.engine.Step(sim.key, this);
             }
@@ -173,7 +189,7 @@ namespace Toves.Sim.Model
         private Key key = null;
         private Engine engine = new Engine();
         private List<Instance> instances = new List<Instance>();
-        private List<Node> nodes = new List<Node>();
+        private HashSet<Node> nodes = new HashSet<Node>();
         private List<Subnet> subnets = new List<Subnet>();
         private ResourceHelper resourceHelper = new ResourceHelper();
 
@@ -186,8 +202,7 @@ namespace Toves.Sim.Model
 
         public event EventHandler<SimulationModelModifiedArgs> SimulationModelModifiedEvent;
         
-        protected virtual void OnSimulationModelModified()
-        {
+        protected virtual void OnSimulationModelModified() {
             EventHandler<SimulationModelModifiedArgs> handler = SimulationModelModifiedEvent;
             if (handler != null) {
                 handler(this, new SimulationModelModifiedArgs());
@@ -197,17 +212,76 @@ namespace Toves.Sim.Model
         public void Hook(ResourceHookType hookType, IResourceAccess rawAccess) {
             Access access = rawAccess as Access;
             if (hookType == ResourceHookType.AfterWrite) {
-                if (access.netsChanged) {
-                    this.subnets = Subnet.UpdateNets(key, access, subnets);
-                }
-                List<Node> dirtyNodes = access.dirtyNodes;
-                if (dirtyNodes != null) {
-                    foreach (Node n in dirtyNodes) {
-                        engine.AddDirtyNet(n.Subnet);
+                while (true) {
+                    bool netsChanged = access.netsChanged;
+                    List<Node> dirtyNodes = access.dirtyNodes;
+                    List<Instance> instancesAdded = access.instancesAdded;
+                    List<Instance> instancesRemoved = access.instancesRemoved;
+                    if (!netsChanged && dirtyNodes == null && instancesAdded == null && instancesRemoved == null) {
+                        break;
+                    }
+                    access.netsChanged = false;
+                    access.dirtyNodes = null;
+                    access.instancesAdded = null;
+                    access.instancesRemoved = null;
+
+                    if (netsChanged) {
+                        this.subnets = Subnet.UpdateNets(key, access, subnets);
+                    }
+                    if (dirtyNodes != null) {
+                        foreach (Node n in dirtyNodes) {
+                            engine.AddDirtyNet(n.Subnet);
+                        }
+                    }
+                    if (instancesAdded != null) {
+                        InstanceEvent evnt = new InstanceEvent(InstanceEvent.Types.InstanceAdded);
+                        InstanceEvent evnt2 = new InstanceEvent(InstanceEvent.Types.InstanceDirty);
+                        InstanceState state = new InstanceState(access, null);
+                        foreach (Instance i in instancesAdded) {
+                            state.Instance = i;
+                            i.HandleEvent(evnt, state);
+                            i.HandleEvent(evnt2, state);
+                        }
+                    }
+                    if (instancesRemoved != null) {
+                        InstanceEvent evnt = new InstanceEvent(InstanceEvent.Types.InstanceRemoved);
+                        InstanceState state = new InstanceState(access, null);
+                        foreach (Instance i in instancesRemoved) {
+                            state.Instance = i;
+                            i.HandleEvent(evnt, state);
+                        }
                     }
                 }
             } else if (hookType == ResourceHookType.AfterDowngrade) {
                 OnSimulationModelModified();
+                
+                if (DebugAfterUpdates) {
+                    Console.WriteLine("Simulation model update complete");
+                    foreach (Instance i in instances) {
+                        Console.WriteLine("  {0} ports {1}", i, ", ".JoinObjectStrings(i.Ports));
+                    }
+                    foreach (Node u in nodes) {
+                        Port p = u as Port;
+                        if (p == null || p.Type == PortType.Passive) {
+                            Console.WriteLine("  {0} neighbors {1}", u, ", ".JoinObjectStrings(u.Neighbors));
+                        }
+                    }
+                    foreach (Subnet n in subnets) {
+                        HashSet<Node> nNodes = new HashSet<Node>(n.Nodes);
+                        List<string> driverStrs = new List<string>();
+                        foreach (Port u in n.Drivers) {
+                            driverStrs.Add(string.Format("{0}/{1}", u, u.GetDrivenValue(key)));
+                            nNodes.Remove(u);
+                        }
+                        foreach (Node u in n.Readers) {
+                            nNodes.Remove(u);
+                        }
+                        Console.WriteLine("  {0} val {1} drivers {2} readers {3} nodes {4}", n, n.GetValue(key),
+                                          ", ".JoinObjectStrings(driverStrs),
+                                          ", ".JoinObjectStrings(n.Readers),
+                                          ", ".JoinObjectStrings(nNodes));
+                    }
+                }
             }
         }
 

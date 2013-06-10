@@ -5,12 +5,9 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Gates
-{
-    public class NotGate : ComponentSharedData
-    {
-        public NotGate()
-        {
+namespace Toves.Components.Gates {
+    public class NotGate : ComponentSharedData {
+        public NotGate() {
             ShareOffsetBounds(new Bounds(-64, -20, 64, 40));
             ShareConnections(new ConnectionPoint[] {
                 ConnectionPoint.newOutput(0, 0), ConnectionPoint.newInput(-64, 0) });
@@ -18,8 +15,7 @@ namespace Toves.Components.Gates
 
         public override string Name { get { return "NOT Gate"; } }
 
-        public override bool Contains(int offsetX, int offsetY)
-        {
+        public override bool Contains(int offsetX, int offsetY) {
             if (OffsetBounds.Contains(offsetX, offsetY, 5)) {
                 Location offs = new Location(offsetX, offsetY);
                 return offs.InCircle(-10, 0, 15)
@@ -29,8 +25,7 @@ namespace Toves.Components.Gates
             }
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state)
-        {
+        public override void Propagate(ComponentInstance instance, IInstanceState state) {
             Value incoming = state.Get(1);
             state.Set(0, incoming.Not, 1);
         }

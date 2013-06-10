@@ -15,8 +15,10 @@ using Toves.Util.Transaction;
 namespace Toves.GuiGeneric.LayoutCanvas {
     public class LayoutCanvasModel : AbstractCanvasModel {
         private ICollection<Component> hidden = new HashSet<Component>();
+        private RepaintThread repainter;
 
         public LayoutCanvasModel() {
+            this.repainter = new RepaintThread(this);
             this.NullGesture = new GestureNull(this);
         }
 
@@ -45,6 +47,7 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             if (value != oldLayout) {
                 this.Layout = value;
                 this.LayoutSim = layoutSim;
+                repainter.SetSimulationModel(layoutSim.SimulationModel);
                 WiringPoints = new LayoutWiringPoints(value);
                 hidden = new HashSet<Component>();
                 this.NullGesture = new GestureNull(this);
@@ -58,6 +61,7 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             } else if (oldSim != layoutSim) {
                 updated = true;
                 this.LayoutSim = layoutSim;
+                repainter.SetSimulationModel(layoutSim.SimulationModel);
             }
             if (updated) {
                 RepaintCanvas();
@@ -85,6 +89,7 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         }
 
         protected override void PaintModel(IPaintbrush pb) {
+            repainter.NotifyRepainted();
             LayoutModel layoutModel = this.Layout;
             LayoutSimulation layoutSim = this.LayoutSim;
             if (layoutModel == null) {

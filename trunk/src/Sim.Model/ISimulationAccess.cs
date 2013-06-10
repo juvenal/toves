@@ -5,10 +5,10 @@ using System.Collections.Generic;
 using Toves.Sim.Inst;
 using Toves.Util.Transaction;
 
-namespace Toves.Sim.Model
-{
-    public interface ISimulationAccess : IResourceAccess
-    {
+namespace Toves.Sim.Model {
+    public interface ISimulationAccess : IResourceAccess {
+        SimulationModel Simulation { get; }
+
         IEnumerable<Instance> Instances { get; }
 
         IEnumerable<Node> Nodes { get; }

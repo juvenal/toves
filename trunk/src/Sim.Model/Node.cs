@@ -4,10 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Toves.Sim.Model
-{
-    public class Node
-    {
+namespace Toves.Sim.Model {
+    public class Node {
         private static List<Link> EmptyLinks = new List<Link>();
         private static ReadOnlyCollection<Link> EmptyLinksView = EmptyLinks.AsReadOnly();
         private static int lastIdAllocated = -1;
@@ -23,17 +21,14 @@ namespace Toves.Sim.Model
             lastIdAllocated = id;
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return string.Format("node{0}", id);
         }
 
         public ReadOnlyCollection<Link> Links { get { return linksView; } }
 
-        public IEnumerable<Node> Neighbors
-        {
-            get
-            {
+        public IEnumerable<Node> Neighbors {
+            get {
                 foreach (Link link in Links) {
                     if (link.Source == this) {
                         yield return link.Destination;
@@ -50,8 +45,7 @@ namespace Toves.Sim.Model
 
         public Subnet TempSubnet { get; private set; }
 
-        public void AddToUseCount(SimulationModel.Key key, int delta)
-        {
+        public void AddToUseCount(SimulationModel.Key key, int delta) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             } else {
@@ -65,8 +59,7 @@ namespace Toves.Sim.Model
             }
         }
 
-        public void AddLink(SimulationModel.Key key, Link value)
-        {
+        public void AddLink(SimulationModel.Key key, Link value) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             } else {
@@ -80,8 +73,7 @@ namespace Toves.Sim.Model
             }
         }
 
-        public bool RemoveLink(SimulationModel.Key key, Link value)
-        {
+        public bool RemoveLink(SimulationModel.Key key, Link value) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             } else {
@@ -97,8 +89,7 @@ namespace Toves.Sim.Model
             }
         }
 
-        public void SetSubnet(SimulationModel.Key key, Subnet value)
-        {
+        public void SetSubnet(SimulationModel.Key key, Subnet value) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             } else {
@@ -106,8 +97,7 @@ namespace Toves.Sim.Model
             }
         }
         
-        public void SetTempSubnet(SimulationModel.Key key, Subnet value)
-        {
+        public void SetTempSubnet(SimulationModel.Key key, Subnet value) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             } else {

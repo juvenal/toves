@@ -2,11 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Inst
-{
-    public class ValueOneBit : Value
-    {
-        public static Value _U = new ValueOneBit("Z", 3, 5);
+namespace Toves.Sim.Inst {
+    public class ValueOneBit : Value {
+        public static Value _U = new ValueOneBit("U", 3, 5);
         public static Value _X = new ValueOneBit("X", 3, 4);
         public static Value _Zero = new ValueOneBit("0", 2, 2);
         public static Value _One = new ValueOneBit("1", 1, 2);
@@ -22,25 +20,21 @@ namespace Toves.Sim.Inst
 
         private ValueOneBit() { }
 
-        private ValueOneBit(String name, int value, int strength)
-        {
+        private ValueOneBit(String name, int value, int strength) {
             this.name = name;
             this.value = value;
             this.strength = strength;
         }
         
-        public override String ToString()
-        {
+        public override String ToString() {
             return name;
         }
 
-        public override bool Equals(object other)
-        {
+        public override bool Equals(object other) {
             return this == other;
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return (value << 4) | strength;
         }
 
@@ -50,10 +44,8 @@ namespace Toves.Sim.Inst
             get { return this; }
         }
         
-        public override Value Pull3
-        {
-            get
-            {
+        public override Value Pull3 {
+            get {
                 switch (this.value) {
                 case 1:
                     return _One;
@@ -65,10 +57,8 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override Value Pull4
-        {
-            get
-            {
+        public override Value Pull4 {
+            get {
                 switch (this.value) {
                 case 0:
                     return _Z;
@@ -82,10 +72,8 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override Value Not
-        {
-            get
-            {
+        public override Value Not {
+            get {
                 Value a = this.Pull3;
                 if (a == _Zero) {
                     return _One;
@@ -97,8 +85,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public override Value Resolve(Value other)
-        {
+        public override Value Resolve(Value other){
             /*    | U X 0 1 Z W L H - 
              *  --+------------------
              *  U | U U U U U U U U U  s5
@@ -126,8 +113,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public override Value And(Value other)
-        {
+        public override Value And(Value other) {
             WidthMismatchException.Check(1, other.Width);
             Value a = this.Pull3;
             Value b = other.Pull3 as ValueOneBit;
@@ -140,8 +126,7 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override Value Or(Value other)
-        {
+        public override Value Or(Value other) {
             WidthMismatchException.Check(1, other.Width);
             Value a = this.Pull3;
             Value b = other.Pull3 as ValueOneBit;

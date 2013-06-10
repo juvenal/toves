@@ -13,8 +13,9 @@ namespace Toves.Util.Collections
             bool first = true;
             foreach (object o in data) {
                 if (first) {
-                    result.Append(sep);
                     first = false;
+                } else {
+                    result.Append(sep);
                 }
                 result.Append(o.ToString());
             }

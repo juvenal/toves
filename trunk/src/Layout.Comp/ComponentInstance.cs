@@ -3,8 +3,7 @@
 using System;
 using Toves.Sim.Inst;
 
-namespace Toves.Layout.Comp
-{
+namespace Toves.Layout.Comp {
     public class ComponentInstance : Instance {
         public ComponentInstance(Component component) : base(component.PortArgs) {
             this.Component = component;
@@ -12,8 +11,10 @@ namespace Toves.Layout.Comp
 
         public Component Component { get; private set; }
 
-        public override void Propagate(IInstanceState state) {
-            Component.Propagate(this, state);
+        public override void HandleEvent(InstanceEvent evnt, IInstanceState state) {
+            if (evnt.Type == InstanceEvent.Types.InstanceDirty) {
+                Component.Propagate(this, state);
+            }
         }
 
         public override string ToString() {
@@ -27,4 +28,3 @@ namespace Toves.Layout.Comp
         }
     }
 }
-
