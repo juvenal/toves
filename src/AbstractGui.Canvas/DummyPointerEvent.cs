@@ -2,12 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public class DummyPointerEvent : IPointerEvent
-    {
-        public DummyPointerEvent(ICanvasModel model, PointerEventType type)
-        {
+namespace Toves.AbstractGui.Canvas {
+    public class DummyPointerEvent : IPointerEvent {
+        public DummyPointerEvent(ICanvasModel model, PointerEventType type) {
             this.Model = model;
             this.Type = type;
         }
@@ -26,11 +23,8 @@ namespace Toves.GuiGeneric.CanvasAbstract
 
         public bool IsModified(GestureModifier query) { return false; }
 
-        public void RepaintCanvas()
-        {
+        public void RepaintCanvas() {
             Model.RepaintCanvas();
         }
-
     }
 }
-

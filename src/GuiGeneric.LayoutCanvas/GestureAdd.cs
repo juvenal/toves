@@ -5,14 +5,16 @@ using System.Collections.Generic;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.Proj.Module;
+using Toves.AbstractGui.Canvas;
 using Toves.Sim.Inst;
+using Toves.Sim.Model;
 
 namespace Toves.GuiGeneric.LayoutCanvas {
     public class GestureAdd : IGesture {
         private LayoutCanvasModel layoutModel;
         private Component master;
-        private ComponentInstance masterInstance;
+        private Instance masterInstance;
         private Location current;
         private bool currentValid;
 
@@ -67,6 +69,12 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             if (currentValid) {
                 // Console.WriteLine("**** Adding {0} ****", master.GetType().Name);
                 layoutModel.Execute((ILayoutAccess lo) => {
+                    if (master is ModuleComponent) {
+                        ProjectModule sub = ((ModuleComponent) master).Module;
+                        if (sub.HasDescendent(lo.Layout)) {
+                            return;
+                        }
+                    }
                     Component clone = lo.AddComponent(master, cur.X, cur.Y);
                     WireTools.CheckForSplits(lo, layoutModel.WiringPoints, new Component[] { clone });
                 });

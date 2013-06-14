@@ -2,17 +2,14 @@
  * source file and at www.toves.org/. */
 using System;
 using Gdk;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 
-namespace Toves.GuiImpl.GtkCanvas
-{
-    public class GtkPointerEvent : IPointerEvent
-    {
+namespace Toves.GuiImpl.GtkCanvas {
+    public class GtkPointerEvent : IPointerEvent {
         private GtkCanvas canvas;
         private ModifierType mods;
 
-        public GtkPointerEvent(GtkCanvas canvas)
-        {
+        public GtkPointerEvent(GtkCanvas canvas) {
             this.canvas = canvas;
         }
 
@@ -26,8 +23,7 @@ namespace Toves.GuiImpl.GtkCanvas
 
         public int Y { get { return (int) RawY; } }
 
-        public bool IsModified(GestureModifier query)
-        {
+        public bool IsModified(GestureModifier query) {
             ModifierType m;
             switch (query) {
             case GestureModifier.Button1:
@@ -57,8 +53,7 @@ namespace Toves.GuiImpl.GtkCanvas
         public ICanvasModel Model { get { return canvas.CanvasModel; } }
 
         public bool Update(PointerEventType type,
-                           double rx, double ry, ModifierType state)
-        {
+                           double rx, double ry, ModifierType state) {
             if (type == Type && rx == RawX && ry == RawY && mods == state) {
                 return false;
             } else {
@@ -76,4 +71,3 @@ namespace Toves.GuiImpl.GtkCanvas
         }
     }
 }
-

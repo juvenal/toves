@@ -8,7 +8,8 @@ namespace Toves.GuiGeneric.Window {
         public enum ChangeTypes {
             ItemAdded,
             ItemRemoved,
-            ItemRenamed
+            ItemRenamed,
+            ItemUnselected,
         }
 
         public ToolboxChangedArgs(ChangeTypes changeType, ToolboxItem changedItem) {

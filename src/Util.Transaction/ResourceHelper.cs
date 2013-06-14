@@ -6,10 +6,8 @@ using System.Threading;
 using System.Linq;
 using Toves.Util.Collections;
 
-namespace Toves.Util.Transaction
-{
-    public class ResourceHelper
-    {
+namespace Toves.Util.Transaction {
+    public class ResourceHelper {
         private static readonly bool Debug = false;
         private static int lastIdAllocated = -1;
 
@@ -20,8 +18,7 @@ namespace Toves.Util.Transaction
         private List<object> acquireLocks = new List<object>();
         private object dataLock = new object();
 
-        public ResourceHelper()
-        {
+        public ResourceHelper() {
             int nextId = lastIdAllocated + 1;
             lastIdAllocated = nextId;
             id = nextId;
@@ -120,7 +117,9 @@ namespace Toves.Util.Transaction
             Monitor.Enter(dataLock);
             List<object> allLocks = new List<object>(acquireLocks);
             bool tryAgain = true;
-            while (tryAgain) {
+            int tries = 0;
+            while (tryAgain && tries < 100) {
+                tries++;
                 tryAgain = false;
                 for (int i = 0; i < allLocks.Count; i++) {
                     bool entered = Monitor.TryEnter(allLocks[i]);
@@ -132,6 +131,9 @@ namespace Toves.Util.Transaction
                         Thread.Sleep(10);
                     }
                 }
+            }
+            if (tries >= 100) {
+                Console.Error.WriteLine("Deadlock detected - going ahead at our own peril");
             }
             allLocks.Add(dataLock);
             return allLocks;
@@ -187,4 +189,3 @@ namespace Toves.Util.Transaction
         }
     }
 }
-

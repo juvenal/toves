@@ -5,14 +5,11 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Gates
-{
-    public class OrGate : BasicGate
-    {
+namespace Toves.Components.Gates {
+    public class OrGate : BasicGate {
         public override string Name { get { return "OR Gate"; } }
 
-        public override bool Contains(int offsetX, int offsetY)
-        {
+        public override bool Contains(int offsetX, int offsetY) {
             if (this.OffsetBounds.Contains(offsetX, offsetY, 5)) {
                 Location offs = new Location(offsetX, offsetY);
                 return offs.InCircle(-96, -72, 125)
@@ -23,15 +20,13 @@ namespace Toves.Components.Gates
             }
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state)
-        {
+        public override void Propagate(IInstanceState state) {
             Value in1 = state.Get(1);
             Value in2 = state.Get(2);
             state.Set(0, in1.Or(in2), 1);
         }
 
-        public override void Paint(IComponentPainter painter)
-        {
+        public override void Paint(IComponentPainter painter) {
             painter.StrokeWidth = 10;
             painter.StrokeArc( -96, -72, 120,  37,  53);
             painter.StrokeArc( -96,  72, 120, -90,  53);
@@ -40,4 +35,3 @@ namespace Toves.Components.Gates
         }
     }
 }
-

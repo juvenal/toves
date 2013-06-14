@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public enum KeyboardCode
-    {
+namespace Toves.AbstractGui.Canvas {
+    public enum KeyboardCode {
         Unknown,
         NormalChar,
         ArrowUp,
@@ -15,4 +13,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         Backspace,
     }
 }
-

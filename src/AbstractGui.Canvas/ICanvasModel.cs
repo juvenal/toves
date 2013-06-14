@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public interface ICanvasModel : IDisposable
-    {
+namespace Toves.AbstractGui.Canvas {
+    public interface ICanvasModel : IDisposable {
         ICanvas Canvas { get; set; }
         
         double Zoom { get; set; }
@@ -23,4 +21,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void Paint(IPaintbrush brush);
     }
 }
-

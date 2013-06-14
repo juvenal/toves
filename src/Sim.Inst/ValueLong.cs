@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Inst
-{
-    public class ValueLong : Value
-    {
+namespace Toves.Sim.Inst {
+    public class ValueLong : Value {
         private static ValueKey key = null;
         
         private readonly byte width;
@@ -13,8 +11,7 @@ namespace Toves.Sim.Inst
 
         private ValueLong() { }
         
-        public ValueLong(ValueKey key, int width, long value)
-        {
+        public ValueLong(ValueKey key, int width, long value) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             }
@@ -22,8 +19,7 @@ namespace Toves.Sim.Inst
             this.value = value & GetMask(width);
         }
 
-        private long GetMask(int width)
-        {
+        private long GetMask(int width) {
             if (width == 64) {
                 return -1;
             } else {
@@ -31,8 +27,7 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override String ToString()
-        {
+        public override String ToString() {
             long v = value;
             String[] strs = new String[width];
             for (int i = 0; i < strs.Length; i++) {
@@ -41,14 +36,12 @@ namespace Toves.Sim.Inst
             return string.Join("", strs);
         }
         
-        public override bool Equals(object other)
-        {
+        public override bool Equals(object other) {
             ValueLong o = other as ValueLong;
             return o != null && this.width == o.width && this.value == o.value;
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             return (int) this.value;
         }
 
@@ -68,8 +61,7 @@ namespace Toves.Sim.Inst
             get { return this; }
         }
         
-        public override Value Resolve(Value other)
-        {
+        public override Value Resolve(Value other) {
             WidthMismatchException.Check(width, other.Width);
             ValueLong o = other as ValueLong;
             if (o == null) {
@@ -95,8 +87,7 @@ namespace Toves.Sim.Inst
             get { return new ValueLong(key, width, ~value); }
         }
         
-        public override Value And(Value other)
-        {
+        public override Value And(Value other) {
             WidthMismatchException.Check(width, other.Width);
             ValueLong o = other as ValueLong;
             if (o == null) {
@@ -108,8 +99,7 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override Value Or(Value other)
-        {
+        public override Value Or(Value other) {
             WidthMismatchException.Check(width, other.Width);
             ValueLong o = other as ValueLong;
             if (o == null) {

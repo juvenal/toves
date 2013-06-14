@@ -8,7 +8,6 @@ namespace Toves.Layout.Comp {
     internal class SharedData {
         internal bool shouldSnap = true;
         internal Bounds offsetBounds = new Bounds(-16, -16, 32, 32);
-        internal ConnectionPoint[] conns = new ConnectionPoint[0];
     }
 
     public abstract class ComponentSharedData : Component {
@@ -26,14 +25,6 @@ namespace Toves.Layout.Comp {
             shared.offsetBounds = value;
         }
 
-        protected void ShareConnections(ConnectionPoint[] value) {
-            shared.conns = value;
-        }
-
-        public override PortArgs[] PortArgs { get { return shared.conns; } }
-        
-        public override ConnectionPoint[] Connections { get { return shared.conns; } }
-        
         public override Bounds OffsetBounds { get { return shared.offsetBounds; } }
         
         public override bool ShouldSnap { get { return shared.shouldSnap; } }
@@ -42,7 +33,7 @@ namespace Toves.Layout.Comp {
             return shared.offsetBounds.Contains(offsetX, offsetY, 5);
         }
 
-        public abstract override void Propagate(ComponentInstance instance, IInstanceState state);
+        public abstract override void Propagate(IInstanceState state);
 
         public abstract override void Paint(IComponentPainter painter);
     }

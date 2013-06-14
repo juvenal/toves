@@ -2,15 +2,13 @@
  * source file and at www.toves.org/. */
 using System;
 
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class ComponentPainter : PaintbrushAdapter, IComponentPainter
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class ComponentPainter : PaintbrushAdapter, IComponentPainter {
         public ComponentPainter(IPaintbrush master, IInstanceState state)
                 : base(master) {
             this.InstanceState = state;
@@ -29,23 +27,19 @@ namespace Toves.GuiGeneric.LayoutCanvas
 
         public IInstanceState InstanceState { get; set; }
 
-        public int GetColorFor(Value value)
-        {
+        public int GetColorFor(Value value) {
             return Constants.GetColorFor(value);
         }
 
-        public void SetColorFor(Value value)
-        {
+        public void SetColorFor(Value value) {
             this.Color = GetColorFor(value);
         }
 
-        public Value GetPortValue(int index)
-        {
+        public Value GetPortValue(int index) {
             return InstanceState.Get(index);
         }
 
-        public void PaintPorts()
-        {
+        public void PaintPorts() {
             using (IPaintbrush pb = this.Create()) {
                 int i = -1;
                 foreach (ConnectionPoint p in Instance.Component.Connections) {
@@ -61,4 +55,3 @@ namespace Toves.GuiGeneric.LayoutCanvas
         }
     }
 }
-

@@ -2,8 +2,7 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
+namespace Toves.AbstractGui.Canvas {
     public enum PointerEventType {
         GestureStart,
         GestureMove,
@@ -21,8 +20,7 @@ namespace Toves.GuiGeneric.CanvasAbstract
         Alt
     }
 
-    public interface IPointerEvent
-    {
+    public interface IPointerEvent {
         PointerEventType Type { get; }
 
         int X { get; }
@@ -40,4 +38,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void RepaintCanvas();
     }
 }
-

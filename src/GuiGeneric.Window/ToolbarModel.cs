@@ -45,7 +45,9 @@ namespace Toves.GuiGeneric.Window {
                     selected = value;
 
                     if (value >= 0 && value < tools.Length) {
-                        window.BeginAdd(tools[value].toolMaster, () => this.selected = -1);
+                        window.BeginAdd(tools[value].toolMaster, () => {
+                            this.Selected = -1;
+                        });
                     } else {
                         window.StopAdd(tools[old].toolMaster);
                     }

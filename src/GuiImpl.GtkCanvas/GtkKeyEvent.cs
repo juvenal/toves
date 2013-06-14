@@ -2,12 +2,10 @@
  * source file and at www.toves.org/. */
 using System;
 
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 
-namespace Toves.GuiImpl.GtkCanvas
-{
-    public class GtkKeyEvent : IKeyEvent
-    {
+namespace Toves.GuiImpl.GtkCanvas {
+    public class GtkKeyEvent : IKeyEvent {
         public GtkKeyEvent(GtkCanvas canvas, uint keyChar, KeyboardCode keyCode) {
             this.Canvas = canvas;
             this.KeyChar = keyChar;
@@ -29,4 +27,3 @@ namespace Toves.GuiImpl.GtkCanvas
         }
     }
 }
-

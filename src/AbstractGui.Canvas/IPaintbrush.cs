@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public enum FontStyle
-    {
+namespace Toves.AbstractGui.Canvas {
+    public enum FontStyle {
         Normal = 0,
         Bold = 1,
         Italic = 2,
@@ -13,8 +11,7 @@ namespace Toves.GuiGeneric.CanvasAbstract
     }
 
     [Flags]
-    public enum TextAlign
-    {
+    public enum TextAlign {
         BaselineLeft = 0,
         Right = 1,
         Center = 2,
@@ -23,8 +20,7 @@ namespace Toves.GuiGeneric.CanvasAbstract
         VCenter = 24,
     }
 
-    public interface IPaintbrush : IDisposable
-    {
+    public interface IPaintbrush : IDisposable {
         int Color { get; set; }
 
         int StrokeWidth { get; set; }
@@ -62,4 +58,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void DrawText(int x, int y, String text, TextAlign align);
     }
 }
-

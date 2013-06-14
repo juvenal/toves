@@ -2,7 +2,7 @@
  * source file and at www.toves.org/. */
 using System;
 using Gtk;
-using Toves.GuiGeneric.Menu;
+using Toves.AbstractGui.Menu;
 using Toves.GuiGeneric.Window;
 
 namespace Toves.GuiImpl.GtkMain {

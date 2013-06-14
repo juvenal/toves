@@ -3,15 +3,16 @@
 using System;
 using System.Collections.Generic;
 using Toves.GuiGeneric.LayoutCanvas;
-using Toves.GuiGeneric.Menu;
+using Toves.AbstractGui.Menu;
 using Toves.Layout.Comp;
-using Toves.Layout.Sim;
+using Toves.Layout.Model;
 using Toves.Proj.Model;
 using Toves.Proj.Module;
 using Toves.Sim.Model;
+using Toves.Util.Transaction;
 
 namespace Toves.GuiGeneric.Window {
-    public class WindowModel : IDisposable {
+    public class WindowModel : IDisposable, CanvasCallback {
         private SimulationThread simThread;
         private Dictionary<ProjectModule, LayoutSimulation> moduleSimulations
             = new Dictionary<ProjectModule, LayoutSimulation>();
@@ -19,12 +20,20 @@ namespace Toves.GuiGeneric.Window {
 
         public WindowModel() {
             this.Project = new Project();
-            this.LayoutCanvas = new LayoutCanvasModel();
+            Transaction xn = new Transaction();
+            IProjectAccess proj = xn.RequestWriteAccess(this.Project);
+            ProjectModule currentModule;
+            using (xn.Start()) {
+                currentModule = proj.AddModule("main", new LayoutModel());
+            }
+
+            this.LayoutCanvas = new LayoutCanvasModel(this);
             this.ToolboxModel = new ToolboxModel(this);
             this.ToolbarModel = new ToolbarModel(this);
             this.simThread = null;
 
             menus.Add(new ProjectMenu(this));
+            SetView(currentModule);
         }
 
         public Project Project { get; private set; }
@@ -35,6 +44,13 @@ namespace Toves.GuiGeneric.Window {
 
         public LayoutCanvasModel LayoutCanvas { get; private set; }
 
+        public Component CanvasAdding {
+            get {
+                GestureAdd add = LayoutCanvas.Gesture as GestureAdd;
+                return add == null ? null : add.Master;
+            }
+        }
+
         public ToolboxModel ToolboxModel { get; private set; }
 
         public ToolbarModel ToolbarModel { get; private set; }
@@ -44,22 +60,34 @@ namespace Toves.GuiGeneric.Window {
         }
 
         public void SetView(ProjectModule module) {
-            LayoutSimulation layoutSim;
-            if (!moduleSimulations.TryGetValue(module, out layoutSim)) {
-                SimulationModel simModel = new SimulationModel();
-                layoutSim = new LayoutSimulation(simModel, module.Layout);
-                moduleSimulations[module] = layoutSim;
+            SetView(module, null);
+        }
+
+        public void SetView(ProjectModule module, LayoutSimulation sim) {
+            if (module.Implementation is LayoutModel) {
+                LayoutModel layoutModel = (LayoutModel) module.Implementation;
+                LayoutSimulation layoutSim;
+                if (sim != null) {
+                    layoutSim = sim;
+                    moduleSimulations[module] = sim;
+                } else if (!moduleSimulations.TryGetValue(module, out layoutSim)) {
+                    SimulationModel simModel = new SimulationModel();
+                    layoutSim = new LayoutSimulation(simModel, layoutModel);
+                    moduleSimulations[module] = layoutSim;
+                }
+                SimulationThread newThread = new SimulationThread(layoutSim.SimulationModel);
+                newThread.Start();
+                SimulationThread oldThread = simThread;
+                simThread = newThread;
+                if (oldThread != null) {
+                    oldThread.RequestStop();
+                }
+                this.CurrentModule = module;
+                ToolboxModel.UpdateCurrent(module);
+                LayoutCanvas.SetView(layoutModel, layoutSim);
+            } else {
+                throw new InvalidOperationException("cannot view this module type");
             }
-            SimulationThread newThread = new SimulationThread(layoutSim.SimulationModel);
-            newThread.Start();
-            SimulationThread oldThread = simThread;
-            simThread = newThread;
-            if (oldThread != null) {
-                oldThread.RequestStop();
-            }
-            this.CurrentModule = module;
-            ToolboxModel.UpdateCurrent(module);
-            LayoutCanvas.SetView(module.Layout, layoutSim);
         }
 
         public void BeginAdd(Component comp, Action onDone) {
@@ -69,7 +97,7 @@ namespace Toves.GuiGeneric.Window {
                 GestureAdd g = new GestureAdd(LayoutCanvas, comp);
                 if (onDone != null) {
                     g.GestureCompleteEvent += (sender, e) => {
-                        if (LayoutCanvas.Gesture == g) {
+                        if (sender == g) {
                             onDone();
                         }
                     };

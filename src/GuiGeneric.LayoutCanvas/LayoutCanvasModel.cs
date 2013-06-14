@@ -3,11 +3,11 @@
 using System;
 using System.Collections.Generic;
 
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
-using Toves.Layout.Sim;
+using Toves.Proj.Module;
 using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
@@ -16,8 +16,10 @@ namespace Toves.GuiGeneric.LayoutCanvas {
     public class LayoutCanvasModel : AbstractCanvasModel {
         private ICollection<Component> hidden = new HashSet<Component>();
         private RepaintThread repainter;
+        private CanvasCallback callback;
 
-        public LayoutCanvasModel() {
+        public LayoutCanvasModel(CanvasCallback callback) {
+            this.callback = callback;
             this.repainter = new RepaintThread(this);
             this.NullGesture = new GestureNull(this);
         }
@@ -27,6 +29,10 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         public LayoutSimulation LayoutSim { get; private set; }
 
         public LayoutWiringPoints WiringPoints { get; private set; }
+
+        internal void RequestView(ProjectModule module, LayoutSimulation sim) {
+            callback.SetView(module, sim);
+        }
 
         public IEnumerable<Component> Hidden {
             get { return hidden; }

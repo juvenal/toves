@@ -11,7 +11,7 @@ namespace Toves.Proj.Model {
         ProjectModule GetModule(String name);
         string GetModuleName(ProjectModule module);
 
-        ProjectModule AddModule(String name);
+        ProjectModule AddModule(String name, IImplementation implementation);
         bool RemoveModule(ProjectModule module);
         void SetModuleName(ProjectModule module, String value);
     }

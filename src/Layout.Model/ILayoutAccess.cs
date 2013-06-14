@@ -8,11 +8,15 @@ using Toves.Util.Transaction;
 
 namespace Toves.Layout.Model {
     public interface ILayoutAccess : IResourceAccess {
+        LayoutModel Layout { get; }
+
         IEnumerable<Component> Components { get; }
 
         IEnumerable<WireSegment> Wires { get; }
 
         IEnumerable<LayoutNode> Nodes { get; }
+
+        IEnumerable<Component> Pins { get; }
 
         LayoutNode FindNode(Location loc);
 

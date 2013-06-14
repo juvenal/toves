@@ -7,12 +7,9 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Util.Collections;
 
-namespace Toves.Layout.Model
-{
-    public class LayoutNodes
-    {
-        public class Node
-        {
+namespace Toves.Layout.Model {
+    public class LayoutNodes {
+        public class Node {
             internal int id;
             internal LocationSet prev = null;
             internal LocationSet locs;
@@ -24,8 +21,7 @@ namespace Toves.Layout.Model
             }
         }
 
-        internal class LocationSet : IEnumerable<Location>
-        {
+        internal class LocationSet : IEnumerable<Location> {
             private int hashCode;
             private List<Location> locs;
 
@@ -55,8 +51,7 @@ namespace Toves.Layout.Model
                 return hashCode;
             }
             
-            public override bool Equals(object right)
-            {
+            public override bool Equals(object right) {
                 if (right is LocationSet) {
                     return this.Equals((LocationSet) right);
                 } else {
@@ -64,8 +59,7 @@ namespace Toves.Layout.Model
                 }
             }
 
-            public bool Equals(LocationSet right)
-            {
+            public bool Equals(LocationSet right) {
                 if (this == right) {
                     return true;
                 } else if (this.hashCode != right.hashCode) {
@@ -83,8 +77,7 @@ namespace Toves.Layout.Model
                 }
             }
 
-            public override string ToString()
-            {
+            public override string ToString() {
                 StringBuilder result = new StringBuilder();
                 bool first = true;
                 foreach (Location loc in locs) {
@@ -102,16 +95,14 @@ namespace Toves.Layout.Model
         private Dictionary<Location, Node> locNodes = new Dictionary<Location, Node>();
         private int nodeId = -1;
 
-        public LayoutNodes()
-        {
+        public LayoutNodes() {
         }
 
-        public void LayoutChanged(ILayoutAccess layout)
-        {
+        public void LayoutChanged(ILayoutAccess layout) {
             List<Node> newNodes = new List<Node>();
 
-            IEnumerable<LocationSet> curSetNodes = getCurrentLocationSets(layout);
-            List<Node> changedNodes = determineNodes(curSetNodes, newNodes);
+            IEnumerable<LocationSet> curSetNodes = GetCurrentLocationSets(layout);
+            List<Node> changedNodes = DetermineNodes(curSetNodes, newNodes);
             Dictionary<Location, Node> locNodes = new Dictionary<Location, Node>();
             foreach (Node n in newNodes) {
                 foreach (Location loc in n.locs) {
@@ -130,8 +121,7 @@ namespace Toves.Layout.Model
             }
         }
 
-        private IEnumerable<LocationSet> getCurrentLocationSets(ILayoutAccess layout)
-        {
+        private IEnumerable<LocationSet> GetCurrentLocationSets(ILayoutAccess layout) {
             HashSet<Location> locs = new HashSet<Location>();
             foreach (WireSegment w in layout.Wires) {
                 locs.Add(w.End0);
@@ -164,8 +154,7 @@ namespace Toves.Layout.Model
             return result;
         }
 
-        private List<Node> determineNodes(IEnumerable<LocationSet> newSets, List<Node> newNodes)
-        {
+        private List<Node> DetermineNodes(IEnumerable<LocationSet> newSets, List<Node> newNodes) {
             Dictionary<LocationSet, Node> oldSets = new Dictionary<LocationSet, Node>();
             foreach (Node n in this.curNodes) {
                 oldSets[n.locs] = n;

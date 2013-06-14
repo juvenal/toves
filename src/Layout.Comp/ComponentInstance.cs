@@ -11,11 +11,31 @@ namespace Toves.Layout.Comp {
 
         public Component Component { get; private set; }
 
-        public override void HandleEvent(InstanceEvent evnt, IInstanceState state) {
-            if (evnt.Type == InstanceEvent.Types.InstanceDirty) {
-                Component.Propagate(this, state);
+        public void OnComponentModified(ComponentModifiedArgs evnt) {
+            ComponentModifiedArgs.Types type = evnt.Type;
+            if (type == ComponentModifiedArgs.Types.PortsChanged) {
+                this.UpdatePorts(Component.PortArgs);
             }
         }
+
+        public override sealed void HandleEvent(InstanceEvent evnt, IInstanceState state) {
+            InstanceEvent.Types type = evnt.Type;
+            if (type == InstanceEvent.Types.InstanceDirty) {
+                Component.Propagate(state);
+            } else {
+                switch (type) {
+                case InstanceEvent.Types.InstanceAdded:
+                    Component.SetInstanceLive(this, true);
+                    break;
+                case InstanceEvent.Types.InstanceRemoved:
+                    Component.SetInstanceLive(this, false);
+                    break;
+                }
+                HandleEventHook(evnt, state);
+            }
+        }
+
+        protected virtual void HandleEventHook(InstanceEvent evnt, IInstanceState state) { }
 
         public override string ToString() {
             string typeName;

@@ -8,7 +8,8 @@ namespace Toves.Sim.Inst {
             InstanceAdded = 1,
             InstanceRemoved = 2,
             InstanceDirty = 4, // should be repropagated
-            SimulationTicked = 8
+            InstancePortsChanged = 8,
+            SimulationTicked = 16
         }
 
         public InstanceEvent(Types type) {

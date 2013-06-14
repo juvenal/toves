@@ -5,17 +5,14 @@ using Gdk;
 using Gtk;
 using System.Collections.Generic;
 using Cairo;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 
-namespace Toves.GuiImpl.GtkCanvas
-{
-    public class GtkCanvas : DrawingArea, ICanvas
-    {
+namespace Toves.GuiImpl.GtkCanvas {
+    public class GtkCanvas : DrawingArea, ICanvas {
         private ICanvasModel canvasModel;
         private GtkPointerEvent pointerEvent;
 
-        public GtkCanvas()
-        {
+        public GtkCanvas() {
             this.canvasModel = null;
             this.pointerEvent = new GtkPointerEvent(this);
 
@@ -57,29 +54,25 @@ namespace Toves.GuiImpl.GtkCanvas
             get { return (int) (0.5 + this.Allocation.Width); }
         }
 
-        public void RepaintCanvas()
-        {
+        public void RepaintCanvas() {
             this.QueueDraw();
         }
 
-        protected override bool OnButtonPressEvent(EventButton evnt)
-        {
+        protected override bool OnButtonPressEvent(EventButton evnt) {
             DispatchPointerEvent(PointerEventType.GestureStart,
                                     evnt.X, evnt.Y, evnt.State);
             base.OnButtonPressEvent(evnt);
             return true;
         }
 
-        protected override bool OnMotionNotifyEvent(EventMotion evnt)
-        {
+        protected override bool OnMotionNotifyEvent(EventMotion evnt) {
             DispatchPointerEvent(PointerEventType.GestureMove,
                                         evnt.X, evnt.Y, evnt.State);
             base.OnMotionNotifyEvent(evnt);
             return true;
         }
 
-        protected override bool OnButtonReleaseEvent(EventButton evnt)
-        {
+        protected override bool OnButtonReleaseEvent(EventButton evnt) {
             DispatchPointerEvent(PointerEventType.GestureMove,
                                  evnt.X, evnt.Y, evnt.State);
             DispatchPointerEvent(PointerEventType.GestureEnd,
@@ -96,8 +89,7 @@ namespace Toves.GuiImpl.GtkCanvas
             }
         }
 
-        protected override bool OnKeyPressEvent(EventKey evnt)
-        {
+        protected override bool OnKeyPressEvent(EventKey evnt) {
             KeyboardCode code;
             switch (evnt.Key) {
             case Gdk.Key.Up: code = KeyboardCode.ArrowUp; break;
@@ -119,8 +111,7 @@ namespace Toves.GuiImpl.GtkCanvas
             return true;
         }
 
-        protected override bool OnExposeEvent(EventExpose args)
-        {
+        protected override bool OnExposeEvent(EventExpose args) {
             base.OnExposeEvent(args);
             Context context = CairoHelper.Create(args.Window);
 
@@ -130,7 +121,5 @@ namespace Toves.GuiImpl.GtkCanvas
             (context as IDisposable).Dispose();
             return true;
         }
-
     }
 }
-

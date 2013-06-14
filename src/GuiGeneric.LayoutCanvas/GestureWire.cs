@@ -5,32 +5,27 @@ using System.Collections.Generic;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 using Toves.Sim.Inst;
 
-namespace Toves.GuiGeneric.LayoutCanvas
-{
-    public class GestureWire : IGesture
-    {
+namespace Toves.GuiGeneric.LayoutCanvas {
+    public class GestureWire : IGesture {
         private LayoutCanvasModel layoutModel;
         private Location loc0;
         private Location loc1;
         private bool isModified = true;
         private bool horzFirst = true;
 
-        public GestureWire(LayoutCanvasModel layoutModel, Location loc0)
-        {
+        public GestureWire(LayoutCanvasModel layoutModel, Location loc0) {
             this.layoutModel = layoutModel;
             this.loc0 = loc0;
             this.loc1 = loc0;
         }
 
-        public void GestureStart(IPointerEvent evnt)
-        {
+        public void GestureStart(IPointerEvent evnt) {
         }
 
-        public void GestureMove(IPointerEvent evnt)
-        {
+        public void GestureMove(IPointerEvent evnt) {
             Location pt = Constants.SnapToGrid(new Location(evnt.X, evnt.Y));
             bool mod = evnt.IsModified(GestureModifier.Alt);
             if (pt != loc1 || mod != isModified) {
@@ -118,8 +113,7 @@ namespace Toves.GuiGeneric.LayoutCanvas
             }
         }
 
-        public void GestureComplete(IPointerEvent evnt)
-        {
+        public void GestureComplete(IPointerEvent evnt) {
             Location loc1 = Constants.SnapToGrid(new Location(evnt.X, evnt.Y));
             if (loc0 != loc1) {
                 WireSegment[] proposedSegs = GetSegments(loc0, loc1, evnt.IsModified(GestureModifier.Alt));
@@ -135,12 +129,10 @@ namespace Toves.GuiGeneric.LayoutCanvas
             evnt.RepaintCanvas();
         }
 
-        public void GestureCancel(IPointerEvent evnt)
-        {
+        public void GestureCancel(IPointerEvent evnt) {
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             if (loc0 != loc1) {
                 pb.Color = Constants.GetColorFor(Value.One);
                 pb.StrokeWidth = Constants.WIRE_WIDTH;
@@ -149,7 +141,5 @@ namespace Toves.GuiGeneric.LayoutCanvas
                 }
             }
         }
-
     }
 }
-

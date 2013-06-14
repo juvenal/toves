@@ -4,10 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Toves.Util.Transaction
-{
-    public class Transaction : IDisposable
-    {
+namespace Toves.Util.Transaction {
+    public class Transaction : IDisposable {
         private List<IResourceAccess> resources = new List<IResourceAccess>();
         private bool started = false;
 
@@ -87,4 +85,3 @@ namespace Toves.Util.Transaction
         }
     }
 }
-

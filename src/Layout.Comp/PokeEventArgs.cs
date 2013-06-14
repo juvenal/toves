@@ -25,6 +25,10 @@ namespace Toves.Layout.Comp
         void Repaint();
 
         void Repropagate();
+
+        void RejectPoke();
+
+        void RequestView(object module, object sim);
     }
 }
 

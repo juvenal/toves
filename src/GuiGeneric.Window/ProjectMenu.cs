@@ -2,12 +2,13 @@
  * source file and at www.toves.org/. */
 using System;
 using System.Collections.Generic;
-using Toves.GuiGeneric.Window;
+using Toves.AbstractGui.Menu;
+using Toves.Layout.Model;
 using Toves.Proj.Model;
 using Toves.Proj.Module;
 using Toves.Util.Transaction;
 
-namespace Toves.GuiGeneric.Menu {
+namespace Toves.GuiGeneric.Window {
     public class ProjectMenu : GenericMenu {
         private WindowModel window;
 
@@ -29,7 +30,7 @@ namespace Toves.GuiGeneric.Menu {
                     ProjectModule cur = proj.GetModule(name);
                     if (cur == null) {
                         success = true;
-                        proj.AddModule(name);
+                        proj.AddModule(name, new LayoutModel());
                     } else {
                         success = false;
                     }

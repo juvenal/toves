@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    internal class PointerEventAdapter : IPointerEvent
-    {
+namespace Toves.AbstractGui.Canvas {
+    internal class PointerEventAdapter : IPointerEvent {
         private IPointerEvent master;
 
         internal PointerEventAdapter(IPointerEvent master, int x, int y) {
@@ -26,25 +24,21 @@ namespace Toves.GuiGeneric.CanvasAbstract
 
         public ICanvasModel Model { get { return master.Model; } }
 
-        public bool IsModified(GestureModifier query)
-        {
+        public bool IsModified(GestureModifier query) {
             return master.IsModified(query);
         }
 
-        public void RepaintCanvas()
-        {
+        public void RepaintCanvas() {
             master.RepaintCanvas();
         }
     }
 
-    public abstract class AbstractCanvasModel : ICanvasModel
-    {
+    public abstract class AbstractCanvasModel : ICanvasModel {
         private IGesture nullGesture = null;
         private IGesture gesture = null;
         private IPointerEvent cancelEvent = null;
 
-        public AbstractCanvasModel()
-        {
+        public AbstractCanvasModel() {
             Zoom = 0.25;
             CenterX = 5000; // coordinates after scaling
             CenterY = 5000;
@@ -64,7 +58,7 @@ namespace Toves.GuiGeneric.CanvasAbstract
             get { return gesture; }
             set {
                 IGesture oldValue = gesture;
-                IGesture newValue = value == null ? nullGesture : value;
+                IGesture newValue = value ?? nullGesture;
                 if (oldValue != newValue) {
                     gesture = newValue;
                     if (oldValue != null) {
@@ -85,8 +79,7 @@ namespace Toves.GuiGeneric.CanvasAbstract
         
         public abstract void Dispose();
 
-        public virtual void HandlePointerEvent(IPointerEvent evnt)
-        {
+        public virtual void HandlePointerEvent(IPointerEvent evnt) {
             double scale = 1.0 / Zoom;
             IPointerEvent subEvnt = new PointerEventAdapter(evnt,
                 (int) (0.5 + (evnt.RawX - Canvas.RawWidth / 2.0) * scale + CenterX),
@@ -112,16 +105,14 @@ namespace Toves.GuiGeneric.CanvasAbstract
 
         protected abstract void PaintModel(IPaintbrush pb);
 
-        public void RepaintCanvas()
-        {
+        public void RepaintCanvas() {
             ICanvas canvas = this.Canvas;
             if (canvas != null) {
                 canvas.RepaintCanvas();
             }
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             pb.TranslateCoordinates(Canvas.RawWidth / 2, Canvas.RawHeight / 2);
             pb.ScaleCoordinates(Zoom, Zoom);
             pb.TranslateCoordinates(-CenterX, -CenterY);
@@ -138,4 +129,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         }
     }
 }
-

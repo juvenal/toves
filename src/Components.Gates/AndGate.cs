@@ -21,7 +21,7 @@ namespace Toves.Components.Gates {
             }
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state) {
+        public override void Propagate(IInstanceState state) {
             Value in1 = state.Get(1);
             Value in2 = state.Get(2);
             state.Set(0, in1.And(in2), 1);

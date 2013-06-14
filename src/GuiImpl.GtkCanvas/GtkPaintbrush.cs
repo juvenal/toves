@@ -3,17 +3,14 @@
 using System;
 using Cairo;
 using Gtk;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 
-namespace Toves.GuiImpl.GtkCanvas
-{
-    public class GtkPaintbrush : IPaintbrush
-    {
+namespace Toves.GuiImpl.GtkCanvas {
+    public class GtkPaintbrush : IPaintbrush {
         private Widget parent;
         private Color color;
 
-        public GtkPaintbrush(Widget parent, Context context)
-        {
+        public GtkPaintbrush(Widget parent, Context context) {
             this.parent = parent;
             this.Context = context;
             this.Color = 0x000000;
@@ -57,30 +54,25 @@ namespace Toves.GuiImpl.GtkCanvas
 
         public int FontSize { get; set; }
 
-        public void TranslateCoordinates(int deltaX, int deltaY)
-        {
+        public void TranslateCoordinates(int deltaX, int deltaY) {
             Context.Translate(deltaX, deltaY);
         }
 
-        public void ScaleCoordinates(double scaleX, double scaleY)
-        {
+        public void ScaleCoordinates(double scaleX, double scaleY) {
             Context.Scale(scaleX, scaleY);
         }
 
-        public void StrokeCircle(int centerX, int centerY, int radius)
-        {
+        public void StrokeCircle(int centerX, int centerY, int radius) {
             Context.Arc(centerX, centerY, radius, 0, 2 * Math.PI);
             Context.Stroke();
         }
 
-        public void StrokeRectangle(int x0, int y0, int width, int height)
-        {
+        public void StrokeRectangle(int x0, int y0, int width, int height) {
             Context.Rectangle(x0, y0, width, height);
             Context.Stroke();
         }
 
-        public void StrokePolygon(int[] xs, int[] ys)
-        {
+        public void StrokePolygon(int[] xs, int[] ys) {
             Context.MoveTo(xs[0], ys[0]);
             for (int i = 1; i < xs.Length; i++) {
                 Context.LineTo(xs[i], ys[i]);
@@ -90,8 +82,7 @@ namespace Toves.GuiImpl.GtkCanvas
         }
 
         public void StrokeArc(int centerX, int centerY, int radius,
-                               int arcStart, int arcLength)
-        {
+                               int arcStart, int arcLength) {
             double pi = Math.PI;
             Context.Arc(centerX, centerY, radius, arcStart * pi / 180.0,
                    (arcStart + arcLength) * pi / 180.0);
@@ -114,20 +105,17 @@ namespace Toves.GuiImpl.GtkCanvas
             Context.Stroke();
         }
 
-        public void FillCircle(int centerX, int centerY, int radius)
-        {
+        public void FillCircle(int centerX, int centerY, int radius) {
             Context.Arc(centerX, centerY, radius, 0, 2 * Math.PI);
             Context.Fill();
         }
         
-        public void FillRectangle(int x0, int y0, int width, int height)
-        {
+        public void FillRectangle(int x0, int y0, int width, int height) {
             Context.Rectangle(x0, y0, width, height);
             Context.Fill();
         }
 
-        public void FillPolygon(int[] xs, int[] ys)
-        {
+        public void FillPolygon(int[] xs, int[] ys) {
             Context.MoveTo(xs[0], ys[0]);
             for (int i = 1; i < xs.Length; i++) {
                 Context.LineTo(xs[i], ys[i]);
@@ -136,8 +124,7 @@ namespace Toves.GuiImpl.GtkCanvas
             Context.Fill();
         }
         
-        public void DrawText(int x, int y, String text, TextAlign align)
-        {
+        public void DrawText(int x, int y, String text, TextAlign align) {
             Pango.FontDescription fd = Pango.FontDescription.FromString(FontFamily);
             fd.Size = Pango.Units.FromPixels(FontSize);
             if ((FontStyle & FontStyle.Bold) != 0) {
@@ -217,8 +204,7 @@ namespace Toves.GuiImpl.GtkCanvas
             return new GtkSubPaintbrush(this);
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             throw new InvalidOperationException("Can't dispose GtkPaintbrush");
         }
     }
@@ -229,8 +215,7 @@ namespace Toves.GuiImpl.GtkCanvas
         private int savedFontSize;
         private FontStyle savedFontStyle;
 
-        internal GtkSubPaintbrush(GtkPaintbrush master) : base(master)
-        {
+        internal GtkSubPaintbrush(GtkPaintbrush master) : base(master) {
             savedColor = master.Color;
             savedFontFamily = master.FontFamily;
             savedFontSize = master.FontSize;
@@ -238,8 +223,7 @@ namespace Toves.GuiImpl.GtkCanvas
             master.Context.Save();
         }
 
-        public override IPaintbrush Create()
-        {
+        public override IPaintbrush Create() {
             return new GtkSubPaintbrush(this.BaseBrush as GtkPaintbrush);
         }
 
@@ -253,4 +237,3 @@ namespace Toves.GuiImpl.GtkCanvas
         }
     }
 }
-

@@ -2,12 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Inst
-{
-    public class PortArgs
-    {
-        public PortArgs(PortType type, int width)
-        {
+namespace Toves.Sim.Inst {
+    public class PortArgs {
+        public PortArgs(PortType type, int width) {
             this.Type = type;
             this.Width = width;
         }

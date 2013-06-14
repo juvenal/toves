@@ -5,11 +5,11 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Wiring {
+namespace Toves.Layout.Wiring {
     public class Pin : ComponentSharedData {
         public Pin() {
             ShareOffsetBounds(new Bounds(-64, -32, 64, 64));
-            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newPassive(0, 0) });
+            this.Connections = new ConnectionPoint[] { ConnectionPoint.newPassive(0, 0) };
         }
 
         public override string Name { get { return "Input Pin"; } }
@@ -18,7 +18,7 @@ namespace Toves.Components.Wiring {
             return OffsetBounds.Contains(offsetX, offsetY, 5);
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state) { }
+        public override void Propagate(IInstanceState state) { }
 
         public override void Paint(IComponentPainter painter) {
             Value value = painter.GetPortValue(0);
@@ -27,7 +27,7 @@ namespace Toves.Components.Wiring {
             painter.Color = 0;
             painter.StrokeRectangle(-64, -32, 64, 64);
             painter.FontSize = 48;
-            painter.FontStyle = Toves.GuiGeneric.CanvasAbstract.FontStyle.Bold;
+            painter.FontStyle = Toves.AbstractGui.Canvas.FontStyle.Bold;
             painter.Color = 0x0000ff;
             painter.DrawText(-32, -4, value.ToString(), TextAlign.Center | TextAlign.VCenter);
             painter.PaintPorts();

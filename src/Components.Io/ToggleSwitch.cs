@@ -5,10 +5,8 @@ using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Sim.Inst;
 
-namespace Toves.Components.Io
-{
-    public class ToggleSwitch : ComponentSharedData, Pokeable
-    {
+namespace Toves.Components.Io {
+    public class ToggleSwitch : ComponentSharedData, Pokeable {
         private class SwitchInstance : ComponentInstance {
             internal Value currentValue = Value.Zero;
             internal bool pendingPress = false;
@@ -16,16 +14,14 @@ namespace Toves.Components.Io
             internal SwitchInstance(Component comp) : base(comp) { }
         }
 
-        public ToggleSwitch()
-        {
+        public ToggleSwitch() {
             ShareOffsetBounds(new Bounds(-64, -32, 64, 64));
-            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newOutput(0, 0) });
+            this.Connections = new ConnectionPoint[] { ConnectionPoint.newOutput(0, 0) };
         }
 
         public override string Name { get { return "Toggle Switch"; } }
 
-        public override bool Contains(int offsetX, int offsetY)
-        {
+        public override bool Contains(int offsetX, int offsetY) {
             return OffsetBounds.Contains(offsetX, offsetY, 5);
         }
 
@@ -66,20 +62,17 @@ namespace Toves.Components.Io
         public void PaintPokeProgress(IComponentPainter painter) {
         }
 
-        public override ComponentInstance CreateInstance()
-        {
+        public override Instance CreateInstance() {
             return new SwitchInstance(this);
         }
             
-        public override void Propagate(ComponentInstance instance, IInstanceState state)
-        {
+        public override void Propagate(IInstanceState state) {
             SwitchInstance myState = state.Instance as SwitchInstance;
             Value curVal = myState == null ? Value.X : myState.currentValue;
             state.Set(0, curVal, 1);
         }
         
-        public override void Paint(IComponentPainter painter)
-        {
+        public override void Paint(IComponentPainter painter) {
             SwitchInstance myState = painter.Instance as SwitchInstance;
             bool pending = myState.pendingPress;
             Value value = myState.currentValue;
@@ -91,7 +84,7 @@ namespace Toves.Components.Io
             int contrast = vr + vg + vb > 128 * 3 ? 0x000000 : 0xFFFFFF;
 
             painter.FontSize = 40;
-            painter.FontStyle = Toves.GuiGeneric.CanvasAbstract.FontStyle.Bold;
+            painter.FontStyle = Toves.AbstractGui.Canvas.FontStyle.Bold;
             if (pending) {
                 painter.StrokeWidth = 10;
                 painter.Color = valColor;
@@ -119,4 +112,3 @@ namespace Toves.Components.Io
         }
     }
 }
-

@@ -1,10 +1,11 @@
 /* Copyright (c) 2013, Carl Burch.  License information is in the GtkMain.cs
  * source file and at www.toves.org/. */
 using System;
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
+using Toves.Proj.Module;
 using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
@@ -14,6 +15,9 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         private class MyPokeEvent : PokeEventArgs {
             private IPointerEvent evnt;
             internal bool repropagateRequested = false;
+            internal bool pokeRejected = false;
+            internal ProjectModule viewRequested = null;
+            internal LayoutSimulation viewSimulation = null;
 
             internal MyPokeEvent(PokeEventType type, int x, int y, IPointerEvent evnt) {
                 this.Type = type;
@@ -38,6 +42,15 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             public void Repropagate() {
                 repropagateRequested = true;
             }
+
+            public void RejectPoke() {
+                pokeRejected = true;
+            }
+
+            public void RequestView(object module, object sim) {
+                viewRequested = module as ProjectModule;
+                viewSimulation = sim as LayoutSimulation;
+            }
         }
 
         private LayoutCanvasModel layoutModel;
@@ -55,12 +68,15 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             }
         }
 
-        private void Send(PokeEventType type, IPointerEvent evnt) {
+        private bool Send(PokeEventType type, IPointerEvent evnt) {
             if (poking != null) {
                 Pokeable dest = poking.Component as Pokeable;
                 Location loc = pokingLocation;
                 MyPokeEvent pokeEvnt = new MyPokeEvent(type, evnt.X - loc.X, evnt.Y - loc.Y, evnt);
                 dest.ProcessPokeEvent(pokeEvnt);
+                if (pokeEvnt.pokeRejected) {
+                    return false;
+                }
                 if (pokeEvnt.StateUpdate != null || pokeEvnt.repropagateRequested) {
                     Transaction xn = new Transaction();
                     ISimulationAccess sim = xn.RequestWriteAccess(layoutModel.LayoutSim.SimulationModel);
@@ -73,11 +89,24 @@ namespace Toves.GuiGeneric.LayoutCanvas {
                         }
                     }
                 }
+                if (pokeEvnt.pokeRejected) { // may be rejected within StateUpdate
+                    return false;
+                }
+                if (pokeEvnt.viewRequested != null) {
+                    layoutModel.RequestView(pokeEvnt.viewRequested, pokeEvnt.viewSimulation);
+                }
+                return true;
+            } else {
+                return false;
             }
         }
 
         public void GestureStart(IPointerEvent evnt) {
-            Send(PokeEventType.PokeStart, evnt);
+            bool accepted = Send(PokeEventType.PokeStart, evnt);
+            if (!accepted) {
+                poking = null;
+                new GestureNull(layoutModel).GestureStartWithoutPoke(evnt);
+            }
         }
 
         public void GestureMove(IPointerEvent evnt) {
@@ -89,15 +118,15 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             layoutModel.Gesture = null;
         }
 
-        public void GestureCancel(IPointerEvent evnt)
-        {
+        public void GestureCancel(IPointerEvent evnt) {
             Send(PokeEventType.PokeCancel, evnt);
-            layoutModel.Gesture = null;
+            if (layoutModel.Gesture == this) {
+                layoutModel.Gesture = null;
+            }
             poking = null;
         }
 
-        public void Paint(IPaintbrush pb)
-        {
+        public void Paint(IPaintbrush pb) {
             ComponentInstance cur = poking;
             if (cur != null) {
                 Location loc = pokingLocation;
