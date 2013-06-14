@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Util.Transaction
-{
-    public interface IResourceAccess
-    {
+namespace Toves.Util.Transaction {
+    public interface IResourceAccess {
         Resource Resource { get; }
 
         bool CanWrite { get; }
@@ -23,4 +21,3 @@ namespace Toves.Util.Transaction
         void Release();
     }
 }
-

@@ -9,7 +9,7 @@ namespace Toves.Components.Io {
     public class Led : ComponentSharedData {
         public Led() {
             ShareOffsetBounds(new Bounds(0, -32, 64, 64));
-            ShareConnections(new ConnectionPoint[] { ConnectionPoint.newInput(0, 0) });
+            this.Connections = new ConnectionPoint[] { ConnectionPoint.newInput(0, 0) };
         }
         
         public override string Name { get { return "LED"; } }
@@ -19,7 +19,7 @@ namespace Toves.Components.Io {
                 && (new Location(offsetX, offsetY).InCircle(32, 0, 37));
         }
         
-        public override void Propagate(ComponentInstance instance, IInstanceState state) {
+        public override void Propagate(IInstanceState state) {
         }
         
         public override void Paint(IComponentPainter painter) {
@@ -31,11 +31,10 @@ namespace Toves.Components.Io {
             painter.Color = 0;
             painter.StrokeCircle(32, 0, 32);
             painter.FontSize = 48;
-            painter.FontStyle = Toves.GuiGeneric.CanvasAbstract.FontStyle.Bold;
+            painter.FontStyle = Toves.AbstractGui.Canvas.FontStyle.Bold;
             painter.Color = 0x0000ff;
             painter.DrawText(32, -4, value.ToString(), TextAlign.Center | TextAlign.VCenter);
             painter.PaintPorts();
         }
     }
 }
-

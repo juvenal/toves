@@ -2,26 +2,22 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Inst
-{
-    public class ValueMultiBit : Value
-    {
+namespace Toves.Sim.Inst {
+    public class ValueMultiBit : Value {
         private Value[] values;
         private Value pull3 = null;
         private Value pull4 = null;
 
         private ValueMultiBit() { }
         
-        public ValueMultiBit(ValueKey key, Value[] values)
-        {
+        public ValueMultiBit(ValueKey key, Value[] values) {
             if (key == null) {
                 throw new InvalidOperationException("need key");
             }
             this.values = values;
         }
 
-        public override String ToString()
-        {
+        public override String ToString() {
             Value[] vs = values;
             String[] strs = new String[vs.Length];
             for (int i = 0; i < vs.Length; i++) {
@@ -30,8 +26,7 @@ namespace Toves.Sim.Inst
             return string.Join("", strs);
         }
         
-        public override bool Equals(object other)
-        {
+        public override bool Equals(object other) {
             ValueMultiBit o = other as ValueMultiBit;
             if (o == null) {
                 return false;
@@ -52,8 +47,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() {
             int ret = 0;
             foreach (Value v in this.values) {
                 ret = 31 * ret + v.GetHashCode();
@@ -69,10 +63,8 @@ namespace Toves.Sim.Inst
             get { return values[index]; }
         }
         
-        public override Value Pull3
-        {
-            get
-            {
+        public override Value Pull3 {
+            get {
                 Value[] vs = values;
                 Value[] ps = vs;
                 Value ret = pull3;
@@ -97,10 +89,8 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public override Value Pull4
-        {
-            get
-            {
+        public override Value Pull4 {
+            get {
                 Value[] vs = values;
                 Value[] ps = vs;
                 Value ret = pull4;
@@ -125,8 +115,7 @@ namespace Toves.Sim.Inst
             }
         }
         
-        public override Value Not
-        {
+        public override Value Not {
             get {
                 Value[] v0s = values;
                 Value[] ret = new Value[v0s.Length];
@@ -143,8 +132,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public override Value Resolve(Value other)
-        {
+        public override Value Resolve(Value other) {
             Value[] v0s = values;
             WidthMismatchException.Check(v0s.Length, other.Width);
             Value[] ret = new Value[v0s.Length];
@@ -165,8 +153,7 @@ namespace Toves.Sim.Inst
             return v0Same ? this : v1Same ? this : Value.Create(ret);
         }
 
-        public override Value And(Value other)
-        {
+        public override Value And(Value other) {
             Value[] v0s = values;
             WidthMismatchException.Check(v0s.Length, other.Width);
             Value[] ret = new Value[v0s.Length];
@@ -187,8 +174,7 @@ namespace Toves.Sim.Inst
             return v0Same ? this : v1Same ? this : Value.Create(ret);
         }
         
-        public override Value Or(Value other)
-        {
+        public override Value Or(Value other) {
             Value[] v0s = values;
             WidthMismatchException.Check(v0s.Length, other.Width);
             Value[] ret = new Value[v0s.Length];

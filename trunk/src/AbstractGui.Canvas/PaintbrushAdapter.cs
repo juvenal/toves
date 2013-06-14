@@ -2,12 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public abstract class PaintbrushAdapter : IPaintbrush
-    {
-        public PaintbrushAdapter(IPaintbrush baseBrush)
-        {
+namespace Toves.AbstractGui.Canvas {
+    public abstract class PaintbrushAdapter : IPaintbrush {
+        public PaintbrushAdapter(IPaintbrush baseBrush) {
             this.BaseBrush = baseBrush;
         }
 
@@ -39,63 +36,51 @@ namespace Toves.GuiGeneric.CanvasAbstract
         }
 
 
-        public void TranslateCoordinates(int deltaX, int deltaY)
-        {
+        public void TranslateCoordinates(int deltaX, int deltaY) {
             BaseBrush.TranslateCoordinates(deltaX, deltaY);
         }
 
-        public void ScaleCoordinates(double scaleX, double scaleY)
-        {
+        public void ScaleCoordinates(double scaleX, double scaleY) {
             BaseBrush.ScaleCoordinates(scaleX, scaleY);
         }
 
-        public void StrokeCircle(int cx, int cy, int radius)
-        {
+        public void StrokeCircle(int cx, int cy, int radius) {
             BaseBrush.StrokeCircle(cx, cy, radius);
         }
 
-        public void StrokeRectangle(int x0, int y0, int width, int height)
-        {
+        public void StrokeRectangle(int x0, int y0, int width, int height) {
             BaseBrush.StrokeRectangle(x0, y0, width, height);
         }
 
-        public void StrokePolygon(int[] xs, int[] ys)
-        {
+        public void StrokePolygon(int[] xs, int[] ys) {
             BaseBrush.StrokePolygon(xs, ys);
         }
 
-        public void StrokeArc(int cx, int cy, int radius, int arcStart, int arcLength)
-        {
+        public void StrokeArc(int cx, int cy, int radius, int arcStart, int arcLength) {
             BaseBrush.StrokeArc(cx, cy, radius, arcStart, arcLength);
         }
 
-        public void StrokeLine(int x0, int y0, int x1, int y1)
-        {
+        public void StrokeLine(int x0, int y0, int x1, int y1) {
             BaseBrush.StrokeLine(x0, y0, x1, y1);
         }
 
-        public void StrokeLines(int[] xs, int[] ys)
-        {
+        public void StrokeLines(int[] xs, int[] ys) {
             BaseBrush.StrokeLines(xs, ys);
         }
 
-        public void FillCircle(int cx, int cy, int radius)
-        {
+        public void FillCircle(int cx, int cy, int radius) {
             BaseBrush.FillCircle(cx, cy, radius);
         }
 
-        public void FillRectangle(int x0, int y0, int width, int height)
-        {
+        public void FillRectangle(int x0, int y0, int width, int height) {
             BaseBrush.FillRectangle(x0, y0, width, height);
         }
 
-        public void FillPolygon(int[] xs, int[] ys)
-        {
+        public void FillPolygon(int[] xs, int[] ys) {
             BaseBrush.FillPolygon(xs, ys);
         }
         
-        public void DrawText(int x, int y, String text, TextAlign align)
-        {
+        public void DrawText(int x, int y, String text, TextAlign align) {
             BaseBrush.DrawText(x, y, text, align);
         }
 
@@ -106,4 +91,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         }
     }
 }
-

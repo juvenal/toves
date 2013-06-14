@@ -2,15 +2,12 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Inst
-{
-    public class ValueKey
-    {
+namespace Toves.Sim.Inst {
+    public class ValueKey {
         internal ValueKey() { }
     }
 
-    public abstract class Value
-    {
+    public abstract class Value {
         private static ValueKey key = new ValueKey();
 
         public static Value U = ValueOneBit._U;
@@ -23,8 +20,7 @@ namespace Toves.Sim.Inst
         public static Value H = ValueOneBit._H;
         public static Value DontCare = ValueOneBit._DontCare;
 
-        public static Value Create(Value[] bits)
-        {
+        public static Value Create(Value[] bits) {
             if (bits.Length <= 1) {
                 if (bits.Length == 0) {
                     throw new ArgumentException("must have at least one bit");
@@ -58,8 +54,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public static Value Create(Value bit, int width)
-        {
+        public static Value Create(Value bit, int width) {
             if (bit.Width != 1) {
                 throw new ArgumentException("argument must be one-bit value");
             } else if (width <= 0) {
@@ -79,8 +74,7 @@ namespace Toves.Sim.Inst
             }
         }
 
-        public static Value FromInt(int value, int width)
-        {
+        public static Value FromInt(int value, int width) {
             if (width == 1) {
                 return (value & 1) == 0 ? Value.Zero : Value.One;
             } else if (width > 1 && width <= 64) {

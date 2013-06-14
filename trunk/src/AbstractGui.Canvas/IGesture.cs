@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public interface IGesture
-    {
+namespace Toves.AbstractGui.Canvas {
+    public interface IGesture {
         void GestureStart(IPointerEvent evnt);
 
         void GestureMove(IPointerEvent evnt);
@@ -17,4 +15,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void Paint(IPaintbrush pb);
     }
 }
-

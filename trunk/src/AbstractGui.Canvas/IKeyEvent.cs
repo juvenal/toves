@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.CanvasAbstract
-{
-    public interface IKeyEvent
-    {
+namespace Toves.AbstractGui.Canvas {
+    public interface IKeyEvent {
         ICanvas Canvas { get; }
 
         uint KeyChar { get; }
@@ -17,4 +15,3 @@ namespace Toves.GuiGeneric.CanvasAbstract
         void RepaintCanvas();
     }
 }
-

@@ -47,13 +47,13 @@ namespace Toves.Proj.Model {
                 return module.GetName(key);
             }
 
-            public ProjectModule AddModule(String name) {
+            public ProjectModule AddModule(String name, IImplementation implementation) {
                 CheckWriteAccess();
                 ProjectModule found = GetModule(name);
                 if (found != null) {
                     throw new InvalidOperationException("module already exists by that name");
                 }
-                ProjectModule toAdd = new ProjectModule(key, name);
+                ProjectModule toAdd = new ProjectModule(key, name, implementation);
                 key.Project.modules.Add(toAdd);
                 toIssue.Add(new ProjectModifiedArgs(this, ProjectModifiedArgs.ChangeTypes.ModuleAdded, toAdd));
                 return toAdd;
@@ -88,8 +88,6 @@ namespace Toves.Proj.Model {
         public Project() {
             this.key = new Key(this);
             this.ResourceHelper = new ResourceHelper();
-            modules.Add(new ProjectModule(this.key, "main"));
-            modules.Add(new ProjectModule(this.key, "dummy"));
         }
 
         public event EventHandler<ProjectModifiedArgs> ProjectModifiedEvent;

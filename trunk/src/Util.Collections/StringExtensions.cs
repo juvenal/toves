@@ -4,10 +4,8 @@ using System;
 using System.Collections;
 using System.Text;
 
-namespace Toves.Util.Collections
-{
-    public static class StringExtensions
-    {
+namespace Toves.Util.Collections {
+    public static class StringExtensions {
         public static String JoinObjectStrings(this String sep, IEnumerable data) {
             StringBuilder result = new StringBuilder();
             bool first = true;

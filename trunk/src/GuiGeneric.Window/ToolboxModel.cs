@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Toves.Layout.Comp;
 using Toves.Components.Gates;
 using Toves.Components.Io;
-using Toves.Components.Wiring;
+using Toves.Layout.Wiring;
 using Toves.Proj.Model;
 using Toves.Proj.Module;
 using Toves.Util.Transaction;
@@ -64,10 +64,10 @@ namespace Toves.GuiGeneric.Window {
 
             List<ToolboxItem> builtins = new List<ToolboxItem>();
             Component[] masters = {
-                new ToggleSwitch(),
                 new AndGate(),
                 new OrGate(),
                 new NotGate(),
+                new ToggleSwitch(),
                 new Led(),
                 new Pin(),
                 new PinOut()
@@ -87,6 +87,7 @@ namespace Toves.GuiGeneric.Window {
         private void RefreshModules(object src, ProjectModifiedArgs args) {
             ProjectModule changedModule = args.ChangedModule;
             ToolboxItem changedItem = null;
+            ProjectModule currentModule = window.CurrentModule;
 
             Transaction xn = new Transaction();
             IProjectAccess proj = xn.RequestReadAccess(window.Project);
@@ -101,6 +102,9 @@ namespace Toves.GuiGeneric.Window {
                 }
                 foreach (ProjectModule mod in proj.GetModules()) {
                     string curName = proj.GetModuleName(mod);
+                    if (mod == currentModule) {
+                        curName = curName + "*";
+                    }
                     ToolboxModule nextItem;
                     if (oldItems.TryGetValue(mod, out nextItem)) {
                         if (nextItem.Name != curName) {
@@ -120,8 +124,7 @@ namespace Toves.GuiGeneric.Window {
                 }
             }
 
-            EventHandler<ToolboxChangedArgs> handler = ToolboxChangedEvent;
-            if (handler != null && changedItem != null) {
+            if (changedItem != null) {
                 ToolboxChangedArgs.ChangeTypes changeType;
                 bool found = true;
                 switch (args.ChangeType) {
@@ -140,7 +143,7 @@ namespace Toves.GuiGeneric.Window {
                     break;
                 }
                 if (found) {
-                    handler(this, new ToolboxChangedArgs(changeType, changedItem));
+                    OnToolboxChanged(changeType, changedItem);
                 }
             }
         }
@@ -158,20 +161,22 @@ namespace Toves.GuiGeneric.Window {
 
             ToolboxModule oldCurrent = currentModule;
             if (oldCurrent != newCurrent) {
-                EventHandler<ToolboxChangedArgs> handler = ToolboxChangedEvent;
                 if (oldCurrent != null && oldCurrent.Name.EndsWith("*")) {
                     oldCurrent.SetName(oldCurrent.Name.Substring(0, oldCurrent.Name.Length - 1));
-                    if (handler != null) {
-                        handler(this, new ToolboxChangedArgs(ToolboxChangedArgs.ChangeTypes.ItemRenamed, oldCurrent));
-                    }
+                    OnToolboxChanged(ToolboxChangedArgs.ChangeTypes.ItemRenamed, oldCurrent);
                 }
                 if (newCurrent != null) {
                     newCurrent.SetName(newCurrent.Name + "*");
-                    if (handler != null) {
-                        handler(this, new ToolboxChangedArgs(ToolboxChangedArgs.ChangeTypes.ItemRenamed, newCurrent));
-                    }
+                    OnToolboxChanged(ToolboxChangedArgs.ChangeTypes.ItemRenamed, newCurrent);
                 }
                 currentModule = newCurrent;
+            }
+        }
+
+        private void OnToolboxChanged(ToolboxChangedArgs.ChangeTypes changeType, ToolboxItem changedItem) {
+            EventHandler<ToolboxChangedArgs> handler = ToolboxChangedEvent;
+            if (handler != null) {
+                handler(this, new ToolboxChangedArgs(changeType, changedItem));
             }
         }
 
@@ -185,18 +190,36 @@ namespace Toves.GuiGeneric.Window {
                 master = ((ToolboxComponent) item).Component;
             } else if (item is ToolboxModule) {
                 ProjectModule module = ((ToolboxModule) item).Module;
-                master = new LayoutComponent(window.Project, module);
+                if (module == window.CurrentModule) {
+                    OnToolboxChanged(ToolboxChangedArgs.ChangeTypes.ItemUnselected, item);
+                    master = null;
+                } else {
+                    master = new ModuleComponent(module, () => {
+                        Transaction xn = new Transaction();
+                        IProjectAccess proj = xn.RequestReadAccess(window.Project);
+                        using (xn.Start()) {
+                            return proj.GetModuleName(module);
+                        }
+                    });
+                }
             } else {
                 master = null;
             }
             if (master != null) {
-                window.BeginAdd(master, null);
+                window.BeginAdd(master, () => {
+                    OnToolboxChanged(ToolboxChangedArgs.ChangeTypes.ItemUnselected, item);
+                });
             }
         }
 
         public void ActivateItem(ToolboxItem item) {
             if (item is ToolboxModule) {
-                window.SetView(((ToolboxModule) item).Module);
+                ProjectModule newView = ((ToolboxModule) item).Module;
+                window.SetView(newView);
+                ModuleComponent comp = window.CanvasAdding as ModuleComponent;
+                if (comp != null && comp.Module == newView) {
+                    window.BeginAdd(null, null);
+                }
             }
         }
     }

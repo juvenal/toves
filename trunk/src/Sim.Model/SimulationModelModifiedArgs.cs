@@ -2,12 +2,9 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Sim.Model
-{
-    public class SimulationModelModifiedArgs : EventArgs
-    {
-        public SimulationModelModifiedArgs()
-        {
+namespace Toves.Sim.Model {
+    public class SimulationModelModifiedArgs : EventArgs {
+        public SimulationModelModifiedArgs() {
         }
     }
 }

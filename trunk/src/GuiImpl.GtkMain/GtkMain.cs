@@ -24,11 +24,10 @@ using Gtk;
 using Toves.GuiGeneric.LayoutCanvas;
 using Toves.GuiGeneric.Window;
 using Toves.GuiImpl.GtkCanvas;
-using Toves.Proj;
 
 namespace Toves.GuiImpl.GtkMain {
     public class GtkMain : Gtk.Window {
-        public static string Version = "0.0.1";
+        public static string Version = "0.0.2";
         public static string CopyrightYear = "2013";
 
         public static void Main(string[] args) {

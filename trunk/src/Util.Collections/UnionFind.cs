@@ -3,10 +3,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Toves.Util.Collections
-{
-    public class UnionFind<T>
-    {
+namespace Toves.Util.Collections {
+    public class UnionFind<T> {
         private List<UnionFindNode<T>> nodes = new List<UnionFindNode<T>>();
         private Dictionary<T, UnionFindNode<T>> nodeMap = new Dictionary<T, UnionFindNode<T>>();
         private HashSet<UnionFindNode<T>> roots = new HashSet<UnionFindNode<T>>();
@@ -33,4 +31,3 @@ namespace Toves.Util.Collections
         }
     }
 }
-

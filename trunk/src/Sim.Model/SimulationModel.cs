@@ -139,21 +139,27 @@ namespace Toves.Sim.Model {
 
             public Value Get(Node n) {
                 CheckReadAccess();
-                Subnet sub = n.Subnet;
-                Value val = sub == null ? null : sub.GetValue(sim.key);
-                if (n is Port) {
-                    Port port = (Port) n;
-                    if (port.IsOutput) {
-                        Value drive = port.GetDrivenValue(sim.key);
-                        val = val == null ? drive : val.Resolve(drive ?? Value.X);
+                if (n == null) {
+                    return Value.X;
+                } else {
+                    Subnet sub = n.Subnet;
+                    Value val = sub == null ? null : sub.GetValue(sim.key);
+                    if (n is Port) {
+                        Port port = (Port) n;
+                        if (port.IsOutput) {
+                            Value drive = port.GetDrivenValue(sim.key);
+                            val = val == null ? drive : val.Resolve(drive ?? Value.X);
+                        }
                     }
+                    return val ?? Value.X;
                 }
-                return val ?? Value.X;
             }
             
             public Value GetDriven(Port port) {
                 CheckReadAccess();
-                if (port.IsOutput) {
+                if (port == null) {
+                    return Value.X;
+                } else if (port.IsOutput) {
                     Value pVal = port.GetDrivenValue(sim.key);
                     return pVal ?? Value.X;
                 } else {
@@ -163,7 +169,7 @@ namespace Toves.Sim.Model {
 
             public void Set(Port port, Value value, int delay) {
                 CheckWriteAccess();
-                if (port.IsOutput) {
+                if (port != null && port.IsOutput) {
                     sim.engine.QueueSet(port, value, delay);
                 } else {
                     throw new InvalidOperationException("port is not an output");
@@ -193,8 +199,7 @@ namespace Toves.Sim.Model {
         private List<Subnet> subnets = new List<Subnet>();
         private ResourceHelper resourceHelper = new ResourceHelper();
 
-        public SimulationModel()
-        {
+        public SimulationModel() {
             this.key = new Key(this);
         }
 
@@ -234,8 +239,8 @@ namespace Toves.Sim.Model {
                         }
                     }
                     if (instancesAdded != null) {
-                        InstanceEvent evnt = new InstanceEvent(InstanceEvent.Types.InstanceAdded);
-                        InstanceEvent evnt2 = new InstanceEvent(InstanceEvent.Types.InstanceDirty);
+                        InstanceEvent evnt = new SimulationInstanceEvent(InstanceEvent.Types.InstanceAdded, this);
+                        InstanceEvent evnt2 = new SimulationInstanceEvent(InstanceEvent.Types.InstanceDirty, this);
                         InstanceState state = new InstanceState(access, null);
                         foreach (Instance i in instancesAdded) {
                             state.Instance = i;
@@ -244,7 +249,7 @@ namespace Toves.Sim.Model {
                         }
                     }
                     if (instancesRemoved != null) {
-                        InstanceEvent evnt = new InstanceEvent(InstanceEvent.Types.InstanceRemoved);
+                        InstanceEvent evnt = new SimulationInstanceEvent(InstanceEvent.Types.InstanceRemoved, this);
                         InstanceState state = new InstanceState(access, null);
                         foreach (Instance i in instancesRemoved) {
                             state.Instance = i;

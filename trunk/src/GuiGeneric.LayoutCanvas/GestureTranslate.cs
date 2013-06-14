@@ -1,7 +1,8 @@
 /* Copyright (c) 2013, Carl Burch.  License information is in the GtkMain.cs
  * source file and at www.toves.org/. */
 using System;
-using Toves.GuiGeneric.CanvasAbstract;
+using System.Collections.Generic;
+using Toves.AbstractGui.Canvas;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
@@ -10,7 +11,7 @@ using Toves.Util.Transaction;
 
 namespace Toves.GuiGeneric.LayoutCanvas {
     public class GestureTranslate : IGesture {
-        private LayoutCanvasModel layoutModel;
+        private LayoutCanvasModel layoutCanvas;
         private ComponentInstance moving;
         private Location movingLocation;
         private int initX = 0;
@@ -19,13 +20,13 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         private int curDy = 0;
         private bool curValid = true;
 
-        public GestureTranslate(LayoutCanvasModel layoutModel,
+        public GestureTranslate(LayoutCanvasModel layoutCanvas,
                                 ComponentInstance moving) {
-            this.layoutModel = layoutModel;
+            this.layoutCanvas = layoutCanvas;
             this.moving = moving;
 
             Transaction xn = new Transaction();
-            ILayoutAccess layout = xn.RequestReadAccess(layoutModel.Layout);
+            ILayoutAccess layout = xn.RequestReadAccess(layoutCanvas.Layout);
             using (xn.Start()) {
                 this.movingLocation = moving.Component.GetLocation(layout);
             }
@@ -54,11 +55,13 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         }
 
         public void GestureStart(IPointerEvent evnt) {
-            initX = evnt.X;
-            initY = evnt.Y;
-            layoutModel.Hidden = new Component[] { moving.Component };
-            Update(evnt);
-            evnt.RepaintCanvas();
+            if (moving != null) {
+                initX = evnt.X;
+                initY = evnt.Y;
+                layoutCanvas.Hidden = new Component[] { moving.Component };
+                Update(evnt);
+                evnt.RepaintCanvas();
+            }
         }
 
         public void GestureMove(IPointerEvent evnt) {
@@ -71,36 +74,35 @@ namespace Toves.GuiGeneric.LayoutCanvas {
             ComponentInstance toMove = moving;
             if (toMove != null) {
                 moving = null;
-                layoutModel.Execute((ILayoutAccess lo) => {
+                layoutCanvas.Execute((ILayoutAccess lo) => {
                     Component comp = toMove.Component;
-                    Location[] toCheck = new Location[comp.Connections.Length];
-                    for (int i = 0; i < toCheck.Length; i++) {
-                        toCheck[i] = movingLocation.Translate(comp.Connections[i].Dx, comp.Connections[i].Dy);
+                    List<Location> toCheck = new List<Location>();
+                    foreach (ConnectionPoint conn in comp.Connections) {
+                        toCheck.Add(movingLocation.Translate(conn.Dx, conn.Dy));
                     }
 
                     if (curValid) {
                         lo.MoveComponent(toMove.Component, curDx, curDy);
-                        layoutModel.WiringPoints.Update();
-                        WireTools.CheckForMerges(lo, layoutModel.WiringPoints, toCheck);
-                        layoutModel.WiringPoints.Update();
-                        WireTools.CheckForSplits(lo, layoutModel.WiringPoints, new Component[] { comp });
+                        layoutCanvas.WiringPoints.Update();
+                        WireTools.CheckForMerges(lo, layoutCanvas.WiringPoints, toCheck);
+                        layoutCanvas.WiringPoints.Update();
+                        WireTools.CheckForSplits(lo, layoutCanvas.WiringPoints, new Component[] { comp });
                     } else {
                         lo.RemoveComponent(toMove.Component);
-                        layoutModel.WiringPoints.Update();
-                        WireTools.CheckForMerges(lo, layoutModel.WiringPoints, toCheck);
+                        layoutCanvas.WiringPoints.Update();
+                        WireTools.CheckForMerges(lo, layoutCanvas.WiringPoints, toCheck);
                     }
                 });
-                layoutModel.Hidden = null;
-                layoutModel.Gesture = null;
+                layoutCanvas.Hidden = null;
+                layoutCanvas.Gesture = null;
                 evnt.RepaintCanvas();
             }
         }
 
-        public void GestureCancel(IPointerEvent evnt)
-        {
+        public void GestureCancel(IPointerEvent evnt) {
             moving = null;
             curValid = false;
-            layoutModel.Hidden = null;
+            layoutCanvas.Hidden = null;
             evnt.RepaintCanvas();
         }
 
@@ -119,4 +121,3 @@ namespace Toves.GuiGeneric.LayoutCanvas {
         }
     }
 }
-

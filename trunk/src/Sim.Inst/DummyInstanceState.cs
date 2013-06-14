@@ -1,7 +1,6 @@
 /* Copyright (c) 2013, Carl Burch.  License information is in the GtkMain.cs
  * source file and at www.toves.org/. */
 using System;
-using Toves.Sim.Model;
 
 namespace Toves.Sim.Inst {
     public class DummyInstanceState : IInstanceState {
@@ -10,8 +9,6 @@ namespace Toves.Sim.Inst {
         }
 
         public Instance Instance { get; private set; }
-
-        public SimulationModel Simulation { get { return null; } }
 
         public Value Get(int index) {
             int width = 1;

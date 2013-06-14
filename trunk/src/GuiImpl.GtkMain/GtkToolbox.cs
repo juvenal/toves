@@ -19,6 +19,8 @@ namespace Toves.GuiImpl.GtkMain {
             this.AppendColumn(nameColumn);
 
             this.Model = BuildStore(source);
+            this.HeadersVisible = false;
+            this.Selection.Mode = SelectionMode.Single;
             this.Selection.Changed += HandleSelect;
             this.RowActivated += HandleActivation;
             source.ToolboxChangedEvent += UpdateStore;
@@ -41,7 +43,17 @@ namespace Toves.GuiImpl.GtkMain {
             ToolboxChangedArgs.ChangeTypes changeType = args.ChangeType;
             ToolboxItem changedItem = args.ChangedItem;
             TreeStore store = this.Model as TreeStore;
-            if (changeType == ToolboxChangedArgs.ChangeTypes.ItemAdded) {
+            if (changeType == ToolboxChangedArgs.ChangeTypes.ItemUnselected) {
+                foreach (TreePath path in this.Selection.GetSelectedRows()) {
+                    TreeIter iter;
+                    if (store.GetIter(out iter, path)) {
+                        ToolboxItem val = GetItem(iter);
+                        if (val == changedItem) {
+                            this.Selection.UnselectIter(iter);
+                        }
+                    }
+                }
+            } else if (changeType == ToolboxChangedArgs.ChangeTypes.ItemAdded) {
                 ToolboxDrawer containingDrawer = null;
                 ToolboxItem itemBefore = null;
                 foreach (ToolboxDrawer drawer in source.Drawers) {

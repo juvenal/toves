@@ -2,10 +2,8 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.Util.Transaction
-{
-    public abstract class ResourceAccess : IResourceAccess
-    {
+namespace Toves.Util.Transaction {
+    public abstract class ResourceAccess : IResourceAccess {
         private static int lastAccessId = -1;
 
         private int id;
@@ -58,4 +56,3 @@ namespace Toves.Util.Transaction
         }
     }
 }
-

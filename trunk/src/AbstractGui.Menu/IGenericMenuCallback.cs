@@ -2,7 +2,7 @@
  * source file and at www.toves.org/. */
 using System;
 
-namespace Toves.GuiGeneric.Menu {
+namespace Toves.AbstractGui.Menu {
     public interface IGenericMenuCallback {
         void Notify(string title, string message);
         string RequestString(string title, string prompt);

@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Toves.GuiGeneric.Menu {
+namespace Toves.AbstractGui.Menu {
     public class GenericMenu : GenericMenuElement {
         private List<GenericMenuElement> elements = new List<GenericMenuElement>();
 

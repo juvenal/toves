@@ -9,14 +9,14 @@ using Toves.Sim.Inst;
 using Toves.Sim.Model;
 using Toves.Util.Transaction;
 
-namespace Toves.Layout.Sim {
+namespace Toves.Layout.Model {
     public class LayoutSimulation {
         private static readonly bool Debug = false;
 
         private SimulationModel simModel;
         private bool activated = false;
         private Dictionary<LayoutNode, Node> nodeMap = new Dictionary<LayoutNode, Node>();
-        private Dictionary<Component, ComponentInstance> instanceMap = new Dictionary<Component, ComponentInstance>();
+        private Dictionary<Component, Instance> instanceMap = new Dictionary<Component, Instance>();
 
         public LayoutSimulation(SimulationModel simModel, LayoutModel model) {
             this.simModel = simModel;
@@ -41,7 +41,7 @@ namespace Toves.Layout.Sim {
             }
         }
 
-        public ComponentInstance GetInstance(ILayoutAccess layout, Component component) {
+        public Instance GetInstance(ILayoutAccess layout, Component component) {
             layout.CheckReadAccess();
             return instanceMap[component];
         }
@@ -75,7 +75,7 @@ namespace Toves.Layout.Sim {
                 }
                 foreach (Component comp in layout.Components) {
                     if (!instanceMap.ContainsKey(comp)) {
-                        ComponentInstance instance = comp.CreateInstance();
+                        Instance instance = comp.CreateInstance();
                         instanceMap[comp] = instance;
                         sim.AddInstance(instance);
                     }
@@ -84,24 +84,26 @@ namespace Toves.Layout.Sim {
                     Console.WriteLine("Circuit edited");
                 }
                 foreach (Component comp in layout.Components) {
-                    Location cloc = comp.GetLocation(layout);
+                    Location compLoc = comp.GetLocation(layout);
                     String cstr = null;
-                    ComponentInstance instance = instanceMap[comp];
-                    ConnectionPoint[] compConns = comp.Connections;
+                    Instance instance = instanceMap[comp];
+                    IEnumerator<ConnectionPoint> conns = comp.Connections.GetEnumerator();
+                    IEnumerator<Port> ports = instance.Ports.GetEnumerator();
                     int i = -1;
-                    foreach (Port port in instance.Ports) {
+                    while (conns.MoveNext() && ports.MoveNext()) {
                         i++;
-                        ConnectionPoint cp = compConns[i];
-                        Location ploc = cloc.Translate(cp.Dx, cp.Dy);
+                        ConnectionPoint conn = conns.Current;
+                        Port port = ports.Current;
+                        Location connLoc = compLoc.Translate(conn.Dx, conn.Dy);
                         if (Debug) {
                             if (i == 0) {
-                                cstr = String.Format("{0}[{1}]", comp.GetType().Name, cloc.ToString());
+                                cstr = String.Format("{0}[{1}]", comp.GetType().Name, compLoc.ToString());
                             } else {
                                 cstr = String.Format("{0," + cstr.Length + "}", "");
                             }
-                            Console.WriteLine("  {0}.{1}: {2} [{3}]", cstr, i, layout.FindNode(ploc), ploc);
+                            Console.WriteLine("  {0}.{1}: {2} [{3}]", cstr, i, layout.FindNode(connLoc), connLoc);
                         }
-                        LinkPortTo(sim, port, nodeMap[layout.FindNode(ploc)]);
+                        LinkPortTo(sim, port, nodeMap[layout.FindNode(connLoc)]);
                     }
                 }
             }

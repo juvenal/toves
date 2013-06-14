@@ -9,8 +9,8 @@ namespace Toves.Components.Gates {
     public class NotGate : ComponentSharedData {
         public NotGate() {
             ShareOffsetBounds(new Bounds(-64, -20, 64, 40));
-            ShareConnections(new ConnectionPoint[] {
-                ConnectionPoint.newOutput(0, 0), ConnectionPoint.newInput(-64, 0) });
+            this.Connections = new ConnectionPoint[] {
+                ConnectionPoint.newOutput(0, 0), ConnectionPoint.newInput(-64, 0) };
         }
 
         public override string Name { get { return "NOT Gate"; } }
@@ -25,7 +25,7 @@ namespace Toves.Components.Gates {
             }
         }
 
-        public override void Propagate(ComponentInstance instance, IInstanceState state) {
+        public override void Propagate(IInstanceState state) {
             Value incoming = state.Get(1);
             state.Set(0, incoming.Not, 1);
         }

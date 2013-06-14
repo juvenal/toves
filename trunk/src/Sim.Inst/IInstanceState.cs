@@ -7,8 +7,6 @@ namespace Toves.Sim.Inst {
     public interface IInstanceState {
         Instance Instance { get; }
 
-        SimulationModel Simulation { get; }
-
         Value Get(int index);
 
         Value GetDriven(int index);

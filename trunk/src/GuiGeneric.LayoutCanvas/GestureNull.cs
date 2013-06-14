@@ -2,7 +2,7 @@
  * source file and at www.toves.org/. */
 using System;
 
-using Toves.GuiGeneric.CanvasAbstract;
+using Toves.AbstractGui.Canvas;
 using Toves.Layout.Comp;
 using Toves.Layout.Data;
 using Toves.Layout.Model;
@@ -11,67 +11,76 @@ using Toves.Util.Transaction;
 
 namespace Toves.GuiGeneric.LayoutCanvas {
     public class GestureNull : IGesture {
-        private LayoutCanvasModel layoutModel;
+        private LayoutCanvasModel layoutCanvas;
         private Location? current;
 
         public GestureNull(LayoutCanvasModel layoutModel) {
-            this.layoutModel = layoutModel;
+            this.layoutCanvas = layoutModel;
             this.current = null;
         }
 
         public void GestureStart(IPointerEvent evnt) {
-            IGesture newGesture = GetGesture(evnt);
+            GestureStart(evnt, true);
+        }
+
+        public void GestureStartWithoutPoke(IPointerEvent evnt) {
+            GestureStart(evnt, false);
+        }
+        
+        private void GestureStart(IPointerEvent evnt, bool considerPoke) {
+            IGesture newGesture = GetGesture(evnt, considerPoke);
             if (newGesture != null) {
                 if (current != null) {
                     current = null;
                     evnt.RepaintCanvas();
                 }
-                layoutModel.Gesture = newGesture;
+                layoutCanvas.Gesture = newGesture;
                 newGesture.GestureStart(evnt);
             }
         }
 
-        private IGesture GetGesture(IPointerEvent evnt) {
-            if (layoutModel.WiringPoints == null) {
+        private IGesture GetGesture(IPointerEvent evnt, bool considerPoke) {
+            if (layoutCanvas.WiringPoints == null) {
                 return null;
             }
             Location eLoc = new Location(evnt.X, evnt.Y);
             Location snapLoc = Constants.SnapToGrid(eLoc);
-            if (layoutModel.WiringPoints.Contains(snapLoc)) {
+            if (layoutCanvas.WiringPoints.Contains(snapLoc)) {
                 int d2 = eLoc.GetDistance2(snapLoc);
                 if (d2 < 16 * 16) {
-                    return new GestureWire(layoutModel, snapLoc);
+                    return new GestureWire(layoutCanvas, snapLoc);
                 }
             }
 
-            ComponentInstance found = null;
+            Instance found = null;
             Transaction xn = new Transaction();
-            ILayoutAccess lo = xn.RequestReadAccess(layoutModel.Layout);
+            ILayoutAccess lo = xn.RequestReadAccess(layoutCanvas.Layout);
             using (xn.Start()) {
                 foreach (Component component in lo.Components) {
                     Location iloc = component.GetLocation(lo);
                     if (component.Contains(eLoc.X - iloc.X, eLoc.Y - iloc.Y)) {
-                        found = layoutModel.LayoutSim.GetInstance(lo, component);
+                        found = layoutCanvas.LayoutSim.GetInstance(lo, component);
                     }
                 }
             }
-            if (found != null) {
-                if (found.Component is Pokeable) {
-                    return new GesturePoke(layoutModel, found);
+            ComponentInstance foundComp = found as ComponentInstance;
+            if (foundComp != null) {
+                if (considerPoke && foundComp.Component is Pokeable) {
+                    return new GesturePoke(layoutCanvas, foundComp);
                 } else {
-                    return new GestureTranslate(layoutModel, found);
+                    return new GestureTranslate(layoutCanvas, foundComp);
                 }
             } else {
-                return new GesturePan(layoutModel);
+                return new GesturePan(layoutCanvas);
             }
         }
 
 
         public void GestureMove(IPointerEvent evnt) {
-            if (layoutModel.WiringPoints != null) {
+            if (layoutCanvas.WiringPoints != null) {
                 Location eLoc = new Location(evnt.X, evnt.Y);
                 Location snapLoc = Constants.SnapToGrid(eLoc);
-                if (layoutModel.WiringPoints.Contains(snapLoc)) {
+                if (layoutCanvas.WiringPoints.Contains(snapLoc)) {
                     if (current != snapLoc) {
                         current = snapLoc;
                         evnt.RepaintCanvas();
